@@ -13,15 +13,29 @@
                 <input type="hidden" name="month" value="{{ $month }}">
                 <input type="hidden" name="total_trips" value="{{ $totalTrips }}">
                 <input type="hidden" name="total_quantity" value="{{ $totalQuantity }}">
+                <input type="hidden" name="fixed_trip_amount" value="{{ $fixedTripAmount }}">
+                <input type="hidden" name="pcs_trip_amount" value="{{ $pcsTripAmount }}">
                 
                 <div class="row">
                     <div class="col-md-6 border-right">
                         <h5 class="text-gray-800 mb-3">Trip Summary</h5>
                         <table class="table table-sm table-bordered">
                             <tr>
-                                <th>Total Earning (Trips Commission)</th>
+                                <th>Fixed Trip Amount</th>
                                 <td class="text-right">
-                                    <input type="number" step="0.01" name="total_amount" id="total_amount" class="form-control text-right" value="{{ number_format($totalAmount, 2, '.', '') }}" readonly>
+                                    {{ number_format($fixedTripAmount, 2) }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>PCS-Based Trip Amount</th>
+                                <td class="text-right">
+                                    {{ number_format($pcsTripAmount, 2) }}
+                                </td>
+                            </tr>
+                            <tr class="table-active font-weight-bold">
+                                <th>Total Trip Earnings</th>
+                                <td class="text-right">
+                                    <input type="number" step="0.01" name="total_amount" id="total_amount" class="form-control text-right font-weight-bold" value="{{ number_format($totalAmount, 2, '.', '') }}" readonly>
                                 </td>
                             </tr>
                             <tr>
@@ -31,7 +45,7 @@
                                 </td>
                             </tr>
                             <tr>
-                                <th>Less: Ad-hoc Payments</th>
+                                <th>Less: Ad-hoc (Advance)</th>
                                 <td class="text-right text-danger">
                                     <input type="number" step="0.01" name="total_driver_payment" id="total_driver_payment" class="form-control text-right text-danger" value="{{ number_format($totalDriverPayment, 2, '.', '') }}" readonly>
                                 </td>

@@ -37,7 +37,7 @@
                             <th>Month</th>
                             <th>Trips</th>
                             <th>Total Earned</th>
-                            <th>Advance Deducted</th>
+                            <th>Advances / Ad-hoc</th>
                             <th>Bonus/Ded</th>
                             <th>Net Payable</th>
                             <th>Status</th>
@@ -50,8 +50,15 @@
                         <tr>
                             <td>{{ \Carbon\Carbon::parse($salary->month)->format('M Y') }}</td>
                             <td>{{ $salary->total_trips }}</td>
-                            <td>{{ number_format($salary->total_amount, 2) }}</td>
-                            <td class="text-danger">-{{ number_format($salary->total_upaad, 2) }}</td>
+                            <td>
+                                <strong>{{ number_format($salary->total_amount, 2) }}</strong><br>
+                                <small class="text-muted">Fixed: {{ number_format($salary->fixed_trip_amount, 2) }}</small><br>
+                                <small class="text-muted">PCS: {{ number_format($salary->pcs_trip_amount, 2) }}</small>
+                            </td>
+                            <td>
+                                <span class="text-danger">Adv: -{{ number_format($salary->total_upaad, 2) }}</span><br>
+                                <span class="text-danger">Ad-hoc: -{{ number_format($salary->total_driver_payment, 2) }}</span>
+                            </td>
                             <td>
                                 @if($salary->bonus > 0) <span class="text-success">+{{ number_format($salary->bonus, 2) }}</span><br> @endif
                                 @if($salary->deduction > 0) <span class="text-danger">-{{ number_format($salary->deduction, 2) }}</span> @endif

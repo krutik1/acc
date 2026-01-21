@@ -16,6 +16,8 @@ class DriverMonthlySalary extends Model
         'total_trips',
         'total_quantity',
         'total_amount',
+        'fixed_trip_amount',
+        'pcs_trip_amount',
         'total_upaad',
         'total_driver_payment',
         'bonus',

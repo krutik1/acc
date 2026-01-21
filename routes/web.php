@@ -155,7 +155,7 @@ Route::middleware(['auth', 'company', 'role:admin'])->group(function () {
         // Driver Monthly Salaries
         Route::post('driver-salaries/calculate', [\App\Http\Controllers\AdminDriverSalaryController::class, 'calculate'])->name('driver-salaries.calculate');
         Route::post('driver-salaries/{salary}/mark-paid', [\App\Http\Controllers\AdminDriverSalaryController::class, 'markPaid'])->name('driver-salaries.markPaid');
-        Route::resource('driver-salaries', \App\Http\Controllers\AdminDriverSalaryController::class)->except(['edit', 'update']);
+        Route::resource('driver-salaries', \App\Http\Controllers\AdminDriverSalaryController::class)->except(['edit', 'update', 'show']);
     });
 });
 

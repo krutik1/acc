@@ -70,16 +70,31 @@ class AdminDriverSalaryController extends Controller
         // Fetch Trips
         $trips = Trip::where('user_id', $user->id)
             ->whereBetween('trip_date', [$startOfMonth, $endOfMonth])
-            ->where('status', 'completed') // Assuming only completed trips are paid? Or all? Usually completed.
+            ->where('status', 'approved')
             ->get();
 
         $totalTrips = $trips->count();
-        $totalQuantity = $trips->sum('quantity'); // If relevant
+        $totalQuantity = $trips->sum('quantity');
         
-        // Calculate Earnings from Trips
+        // Calculate Earnings from Trips (Split by Type)
+        $fixedTripAmount = 0;
+        $pcsTripAmount = 0;
         $totalAmount = 0;
+
         foreach ($trips as $trip) {
-            $totalAmount += $trip->calculateCommission();
+            // Use stored commission if available (preserves historical rates), otherwise calculate
+            $commission = $trip->driver_commission > 0 ? $trip->driver_commission : $trip->calculateCommission();
+            $totalAmount += $commission;
+            
+            // Determine type based on effective payment mode
+            // We use the same logic as calculateCommission to determine mode
+            $mode = $trip->effective_payment_mode; 
+            
+            if ($mode === 'trip') {
+                $fixedTripAmount += $commission;
+            } else {
+                $pcsTripAmount += $commission;
+            }
         }
 
         // Calculate Upaad (Advances)
@@ -87,13 +102,14 @@ class AdminDriverSalaryController extends Controller
             ->whereBetween('date', [$startOfMonth, $endOfMonth])
             ->sum('amount');
 
-        // Calculate Ad-hoc Driver Payments
+        // Calculate Ad-hoc Driver Payments (Treat as Advance)
         $totalDriverPayment = \App\Models\DriverPayment::where('user_id', $user->id)
             ->whereBetween('payment_date', [$startOfMonth, $endOfMonth])
             ->where('company_id', session('selected_company_id'))
             ->sum('amount');
 
         // Initial Payable
+        // Logic: (Fixed + PCS) - Upaad - AdHoc
         $payableAmount = $totalAmount - $totalUpaad - $totalDriverPayment;
 
         // Passed to view for preview
@@ -102,7 +118,8 @@ class AdminDriverSalaryController extends Controller
 
         return view('admin.driver_salaries.preview', compact(
             'user', 'month', 'totalTrips', 'totalQuantity', 
-            'totalAmount', 'totalUpaad', 'totalDriverPayment', 'payableAmount', 'bonus', 'deduction'
+            'totalAmount', 'fixedTripAmount', 'pcsTripAmount',
+            'totalUpaad', 'totalDriverPayment', 'payableAmount', 'bonus', 'deduction'
         ));
     }
 
@@ -114,6 +131,8 @@ class AdminDriverSalaryController extends Controller
             'total_trips' => 'required|integer',
             'total_quantity' => 'required|numeric',
             'total_amount' => 'required|numeric',
+            'fixed_trip_amount' => 'required|numeric',
+            'pcs_trip_amount' => 'required|numeric',
             'total_upaad' => 'required|numeric',
             'total_driver_payment' => 'required|numeric',
             'bonus' => 'required|numeric',
@@ -123,7 +142,14 @@ class AdminDriverSalaryController extends Controller
         ]);
 
         // Recalculate Net Payable in Backend for "Accounting-Level Accuracy"
-        $netPayable = ($validated['total_amount'] - $validated['total_upaad'] - $validated['total_driver_payment']) + $validated['bonus'] - $validated['deduction'];
+        // Net = (Fixed + PCS) - Advance - AdHoc + Bonus - OtherDeductions
+        // total_amount is sum(Fixed + PCS), just verifying consistency
+        
+        $earnings = $validated['fixed_trip_amount'] + $validated['pcs_trip_amount'];
+        $deductions = $validated['total_upaad'] + $validated['total_driver_payment'] + $validated['deduction'];
+        $additions = $validated['bonus'];
+        
+        $netPayable = $earnings - $deductions + $additions;
         
         $monthlySalary = new DriverMonthlySalary($validated);
         $monthlySalary->company_id = session('selected_company_id');

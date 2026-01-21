@@ -62,10 +62,14 @@
                             <td>{{ $salary->user->name }}</td>
                             <td>{{ \Carbon\Carbon::parse($salary->month)->format('M Y') }}</td>
                             <td>{{ $salary->total_trips }}</td>
-                            <td>{{ number_format($salary->total_amount, 2) }}</td>
+                            <td>
+                                <strong>{{ number_format($salary->total_amount, 2) }}</strong><br>
+                                <small class="text-muted">Fixed: {{ number_format($salary->fixed_trip_amount, 2) }}</small><br>
+                                <small class="text-muted">PCS: {{ number_format($salary->pcs_trip_amount, 2) }}</small>
+                            </td>
                             <td>
                                 <small>Adv:</small> {{ number_format($salary->total_upaad, 2) }}<br>
-                                <small>Paid:</small> {{ number_format($salary->total_driver_payment, 2) }}
+                                <small>Ad-hoc:</small> {{ number_format($salary->total_driver_payment, 2) }}
                             </td>
                             <td>
                                 <span class="text-success">+{{ number_format($salary->bonus, 2) }}</span><br>
