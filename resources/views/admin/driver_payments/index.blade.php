@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="page-header d-flex justify-content-between align-items-center mb-4">
-    <h1>Driver Payments</h1>
+    <h1>Advance Driver Payments</h1>
     <a href="{{ route('admin.driver-payments.create') }}" class="btn btn-primary">
         <i class="bi bi-plus-lg me-1"></i>Add Payment
     </a>

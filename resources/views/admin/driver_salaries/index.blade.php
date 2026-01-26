@@ -49,7 +49,7 @@
                             <th>Month</th>
                             <th>Trips</th>
                             <th>Total Earned</th>
-                            <th>Advance / Paid</th>
+                            <th>Advance Payment</th>
                             <th>Bonus/Ded</th>
                             <th>Payable</th>
                             <th>Status</th>
@@ -68,8 +68,7 @@
                                 <small class="text-muted">PCS: {{ number_format($salary->pcs_trip_amount, 2) }}</small>
                             </td>
                             <td>
-                                <small>Adv:</small> {{ number_format($salary->total_upaad, 2) }}<br>
-                                <small>Ad-hoc:</small> {{ number_format($salary->total_driver_payment, 2) }}
+                                <span class="text-danger">-{{ number_format($salary->advance_amount, 2) }}</span>
                             </td>
                             <td>
                                 <span class="text-success">+{{ number_format($salary->bonus, 2) }}</span><br>

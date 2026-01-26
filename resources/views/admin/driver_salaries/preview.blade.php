@@ -39,15 +39,9 @@
                                 </td>
                             </tr>
                             <tr>
-                                <th>Less: Total Upaad (Advances)</th>
+                                <th>Less: Advance Payment</th>
                                 <td class="text-right text-danger">
-                                    <input type="number" step="0.01" name="total_upaad" id="total_upaad" class="form-control text-right text-danger" value="{{ number_format($totalUpaad, 2, '.', '') }}" readonly>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th>Less: Ad-hoc (Advance)</th>
-                                <td class="text-right text-danger">
-                                    <input type="number" step="0.01" name="total_driver_payment" id="total_driver_payment" class="form-control text-right text-danger" value="{{ number_format($totalDriverPayment, 2, '.', '') }}" readonly>
+                                    <input type="number" step="0.01" name="advance_amount" id="advance_amount" class="form-control text-right text-danger" value="{{ number_format($advanceAmount, 2, '.', '') }}" readonly>
                                 </td>
                             </tr>
                         </table>
@@ -96,12 +90,11 @@
 <script>
     function calculateNetPayable() {
         let totalAmount = parseFloat(document.getElementById('total_amount').value) || 0;
-        let totalUpaad = parseFloat(document.getElementById('total_upaad').value) || 0;
-        let totalDriverPayment = parseFloat(document.getElementById('total_driver_payment').value) || 0;
+        let advanceAmount = parseFloat(document.getElementById('advance_amount').value) || 0;
         let bonus = parseFloat(document.getElementById('bonus').value) || 0;
         let deduction = parseFloat(document.getElementById('deduction').value) || 0;
 
-        let netPayable = (totalAmount - totalUpaad - totalDriverPayment) + bonus - deduction;
+        let netPayable = (totalAmount - advanceAmount) + bonus - deduction;
         
         document.getElementById('payable_amount').value = netPayable.toFixed(2);
     }

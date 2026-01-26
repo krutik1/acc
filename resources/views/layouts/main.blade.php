@@ -445,7 +445,7 @@
                                     </li>
                                     <li class="nav-item">
                                         <a class="nav-link {{ request()->routeIs('admin.driver-payments.*') ? 'active' : '' }}" href="{{ route('admin.driver-payments.index') }}" style="padding-top: 8px; padding-bottom: 8px;">
-                                            Ad-hoc Driver Payments
+                                            Advance Driver Payments
                                         </a>
                                     </li>
                                     <li class="nav-item">

@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\DriverMonthlySalary;
 use App\Models\User;
 use App\Models\Trip;
-use App\Models\Upaad;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
@@ -97,20 +96,16 @@ class AdminDriverSalaryController extends Controller
             }
         }
 
-        // Calculate Upaad (Advances)
-        $totalUpaad = Upaad::where('user_id', $user->id)
-            ->whereBetween('date', [$startOfMonth, $endOfMonth])
-            ->sum('amount');
-
-        // Calculate Ad-hoc Driver Payments (Treat as Advance)
-        $totalDriverPayment = \App\Models\DriverPayment::where('user_id', $user->id)
+        // Calculate Advance Payments (Formerly Ad-hoc / Upaad)
+        // Advance Payment must be recorded with payment date and is deducted in the month it is paid
+        $advanceAmount = \App\Models\DriverPayment::where('user_id', $user->id)
             ->whereBetween('payment_date', [$startOfMonth, $endOfMonth])
             ->where('company_id', session('selected_company_id'))
             ->sum('amount');
 
         // Initial Payable
-        // Logic: (Fixed + PCS) - Upaad - AdHoc
-        $payableAmount = $totalAmount - $totalUpaad - $totalDriverPayment;
+        // Logic: (Fixed + PCS) - Advance
+        $payableAmount = $totalAmount - $advanceAmount;
 
         // Passed to view for preview
         $bonus = 0;
@@ -119,7 +114,7 @@ class AdminDriverSalaryController extends Controller
         return view('admin.driver_salaries.preview', compact(
             'user', 'month', 'totalTrips', 'totalQuantity', 
             'totalAmount', 'fixedTripAmount', 'pcsTripAmount',
-            'totalUpaad', 'totalDriverPayment', 'payableAmount', 'bonus', 'deduction'
+            'advanceAmount', 'payableAmount', 'bonus', 'deduction'
         ));
     }
 
@@ -133,8 +128,7 @@ class AdminDriverSalaryController extends Controller
             'total_amount' => 'required|numeric',
             'fixed_trip_amount' => 'required|numeric',
             'pcs_trip_amount' => 'required|numeric',
-            'total_upaad' => 'required|numeric',
-            'total_driver_payment' => 'required|numeric',
+            'advance_amount' => 'required|numeric',
             'bonus' => 'required|numeric',
             'deduction' => 'required|numeric',
             'payable_amount' => 'required|numeric',
@@ -142,11 +136,10 @@ class AdminDriverSalaryController extends Controller
         ]);
 
         // Recalculate Net Payable in Backend for "Accounting-Level Accuracy"
-        // Net = (Fixed + PCS) - Advance - AdHoc + Bonus - OtherDeductions
-        // total_amount is sum(Fixed + PCS), just verifying consistency
+        // Net = (Fixed + PCS) - Advance + Bonus - OtherDeductions
         
         $earnings = $validated['fixed_trip_amount'] + $validated['pcs_trip_amount'];
-        $deductions = $validated['total_upaad'] + $validated['total_driver_payment'] + $validated['deduction'];
+        $deductions = $validated['advance_amount'] + $validated['deduction'];
         $additions = $validated['bonus'];
         
         $netPayable = $earnings - $deductions + $additions;
