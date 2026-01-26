@@ -12,7 +12,7 @@
 
 <div class="card">
     <div class="card-body">
-        <form action="{{ route('companies.store') }}" method="POST">
+        <form action="{{ route('companies.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
             
             <div class="row">
@@ -31,6 +31,26 @@
                            id="gst_number" name="gst_number" value="{{ old('gst_number') }}" 
                            placeholder="e.g., 24BCYPB6027P1Z1" maxlength="15">
                     @error('gst_number')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="logo" class="form-label">Company Logo</label>
+                    <input type="file" class="form-control @error('logo') is-invalid @enderror" id="logo" name="logo" accept="image/png, image/jpeg, image/jpg, image/svg+xml">
+                    <div class="form-text">Supported formats: PNG, JPG, SVG. Max size: 2MB.</div>
+                    @error('logo')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label for="favicon" class="form-label">Favicon</label>
+                    <input type="file" class="form-control @error('favicon') is-invalid @enderror" id="favicon" name="favicon" accept="image/png, image/x-icon, image/svg+xml">
+                    <div class="form-text">Supported formats: PNG, ICO, SVG. Max size: 512KB. Recommended: 32x32.</div>
+                    @error('favicon')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>

@@ -29,7 +29,7 @@
                     </select>
                 </div>
                 <div class="col-md-3 mb-3">
-                    <button type="submit" class="btn btn-primary w-100">Filter</button>
+                    <button type="submit" class="btn btn-primary w-100" title="Filter"><i class="bi bi-filter"></i></button>
                     <a href="{{ route('admin.driver-salaries.index') }}" class="btn btn-secondary w-100 mt-2">Reset</a>
                 </div>
             </form>

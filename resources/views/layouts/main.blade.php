@@ -1,3 +1,10 @@
+@php
+    $currentCompanyId = session('selected_company_id');
+    $currentCompany = \App\Models\Company::find($currentCompanyId);
+    $companyName = $currentCompany ? $currentCompany->name : config('app.name', 'Invoice System');
+    $companyLogo = $currentCompany && $currentCompany->logo_path ? Storage::url($currentCompany->logo_path) : null;
+    $companyFavicon = $currentCompany && $currentCompany->favicon_path ? Storage::url($currentCompany->favicon_path) : null;
+@endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
@@ -5,8 +12,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     
-    <title>{{ session('company_name', config('app.name', 'Invoice System')) }} - @yield('title', 'Dashboard')</title>
+    <title>{{ $companyName }} - @yield('title', 'Dashboard')</title>
     
+    @if($companyFavicon)
+        <link rel="icon" type="image/x-icon" href="{{ $companyFavicon }}">
+    @endif
+
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
@@ -55,8 +66,15 @@
             font-size: 1.5rem;
             color: var(--text-main) !important;
             letter-spacing: -0.02em;
+            display: flex;
+            align-items: center;
         }
         
+        .navbar-brand img {
+            max-height: 40px;
+            margin-right: 10px;
+        }
+
         .navbar-brand span {
             color: var(--primary-color);
         }
@@ -253,7 +271,10 @@
     <nav class="navbar navbar-expand-lg navbar-light sticky-top">
         <div class="container-fluid">
             <a class="navbar-brand" href="{{ Auth::user()->isDriver() ? route('driver.dashboard') : route('dashboard') }}">
-                {{ session('company_name', config('app.name', 'Invoice System')) }}
+                @if($companyLogo)
+                    <img src="{{ $companyLogo }}" alt="{{ $companyName }}">
+                @endif
+                {{ $companyName }}
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
@@ -327,6 +348,9 @@
                             <li><a class="dropdown-item {{ request()->routeIs('reports.index') ? 'active' : '' }}" href="{{ route('reports.index') }}">Monthly Sales</a></li>
                             <li><a class="dropdown-item {{ request()->routeIs('reports.party-statement') ? 'active' : '' }}" href="{{ route('reports.party-statement') }}">Party Ledger</a></li>
                             <li><a class="dropdown-item {{ request()->routeIs('reports.gst-summary') ? 'active' : '' }}" href="{{ route('reports.gst-summary') }}">GST Report</a></li>
+                            <li><a class="dropdown-item {{ request()->routeIs('reports.salary-report') ? 'active' : '' }}" href="{{ route('reports.salary-report') }}">Salary Report(HR)</a></li>
+                            <li><a class="dropdown-item {{ request()->routeIs('reports.upaad-report') ? 'active' : '' }}" href="{{ route('reports.upaad-report') }}">Upaad Report</a></li>
+                            <li><a class="dropdown-item {{ request()->routeIs('reports.employee-statement') ? 'active' : '' }}" href="{{ route('reports.employee-statement') }}">Employee Statement</a></li>
                         </ul>
                     </li>
                     <li><hr class="dropdown-divider text-white border-secondary"></li>

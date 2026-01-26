@@ -15,10 +15,13 @@
     <div class="card-body">
         <div class="row g-3">
             <div class="col-md-9 ms-auto">
-                 <div class="input-group">
-                    <span class="input-group-text bg-transparent border-end-0"><i class="bi bi-search"></i></span>
-                    <input type="text" class="form-control border-start-0 ps-0" placeholder="Search functionality to be implemented if needed..." disabled>
-                </div>
+                 <form action="{{ route('companies.index') }}" method="GET">
+                     <div class="input-group">
+                        <span class="input-group-text bg-transparent border-end-0"><i class="bi bi-search"></i></span>
+                        <input type="text" name="search" class="form-control border-start-0 ps-0" placeholder="Search by name, GST or mobile..." value="{{ request('search') }}">
+                        <button class="btn btn-outline-secondary" type="submit" title="Search"><i class="bi bi-search"></i></button>
+                    </div>
+                </form>
             </div>
              <div class="col-md-3 text-end">
                 <!-- Search in companies is processed via collection or future backend implementation. 

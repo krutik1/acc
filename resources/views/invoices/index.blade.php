@@ -41,8 +41,8 @@
                 <input type="text" name="search" class="form-control" placeholder="Invoice No." value="{{ request('search') }}">
             </div>
             <div class="col-md-12 text-end">
-                <button type="submit" class="btn btn-primary me-2"><i class="bi bi-filter me-1"></i>Filter</button>
-                <a href="{{ route('invoices.index') }}" class="btn btn-outline-secondary">Reset</a>
+                <button type="submit" class="btn btn-primary me-2" title="Filter"><i class="bi bi-filter"></i></button>
+                <a href="{{ route('invoices.index') }}" class="btn btn-outline-secondary" title="Reset"><i class="bi bi-x-lg"></i></a>
             </div>
         </form>
     </div>

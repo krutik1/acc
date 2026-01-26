@@ -53,7 +53,7 @@
                 </select>
             </div>
             <div class="col-md-1 d-flex align-items-end">
-                <button type="submit" class="btn btn-sm btn-primary w-100">
+                <button type="submit" class="btn btn-sm btn-primary w-100" title="Filter">
                     <i class="bi bi-filter"></i>
                 </button>
             </div>

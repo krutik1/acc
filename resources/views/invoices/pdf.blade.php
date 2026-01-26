@@ -153,23 +153,48 @@
                 </table>
             </td>
             <td class="w-40">
-                <table class="w-100">
-                    <tr>
-                        <td style="width: 70px;"><strong>INV NO.</strong></td>
-                        <td><strong>{{ $invoice->invoice_number }}</strong></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Date :</strong></td>
-                        <td>{{ $invoice->invoice_date->format('d/m/Y') }}</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Due Day :</strong></td>
-                        <td>0</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Due Date :</strong></td>
-                        <td>{{ $invoice->invoice_date->format('d/m/Y') }}</td>
-                    </tr>
+                <table style="width: 100%; margin-bottom: 2rem;">
+                <tr>
+                    <td style="width: 60%; vertical-align: top;">
+                        @if($company->logo_path)
+                            <img src="{{ public_path('storage/' . $company->logo_path) }}" alt="{{ $company->name }}" style="max-height: 80px; margin-bottom: 10px;">
+                            <h1 style="margin: 0; color: #333; font-size: 24px;">{{ $company->name }}</h1>
+                        @else
+                            <h1 style="margin: 0; color: #333; font-size: 24px;">{{ $company->name }}</h1>
+                        @endif
+                        
+                        <div style="color: #666; font-size: 14px; margin-top: 5px;">
+                            {{ $company->address }}<br>
+                            @if($company->gst_number)
+                                GSTIN: {{ $company->gst_number }}<br>
+                            @endif
+                            @if($company->mobile_numbers)
+                                Mobile: {{ $company->mobile_numbers }}
+                            @endif
+                        </div>
+                    </td>
+                    <td style="width: 40%; vertical-align: top; text-align: right;">
+                        <h2 style="margin: 0; color: #6fd943; font-size: 32px;">INVOICE</h2>
+                        <table style="width: 100%; margin-top: 10px;">
+                            <tr>
+                                <td style="width: 70px;"><strong>INV NO.</strong></td>
+                                <td><strong>{{ $invoice->invoice_number }}</strong></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Date :</strong></td>
+                                <td>{{ $invoice->invoice_date->format('d/m/Y') }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Due Day :</strong></td>
+                                <td>0</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Due Date :</strong></td>
+                                <td>{{ $invoice->invoice_date->format('d/m/Y') }}</td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
                 </table>
             </td>
         </tr>

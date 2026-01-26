@@ -18,7 +18,7 @@
                     <input type="month" name="month" id="month" class="form-control" value="{{ request('month') }}">
                 </div>
                 <div class="col-md-4 mb-3">
-                    <button type="submit" class="btn btn-primary w-100">Filter</button>
+                    <button type="submit" class="btn btn-primary w-100" title="Filter"><i class="bi bi-filter"></i></button>
                     <a href="{{ route('driver.salaries.index') }}" class="btn btn-secondary w-100 mt-2">Reset</a>
                 </div>
             </form>

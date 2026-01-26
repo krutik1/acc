@@ -21,7 +21,7 @@
                 </div>
             </div>
              <div class="col-md-3 text-end">
-                 <button type="submit" class="btn btn-primary me-2"><i class="bi bi-filter me-1"></i>Filter</button>
+                 <button type="submit" class="btn btn-primary me-2" title="Filter"><i class="bi bi-filter"></i></button>
                  <a href="{{ route('parties.index') }}" class="btn btn-outline-secondary">Reset</a>
             </div>
         </form>

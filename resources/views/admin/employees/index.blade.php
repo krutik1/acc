@@ -33,7 +33,7 @@
                 </select>
             </div>
             <div class="col-md-2">
-                <button type="submit" class="btn btn-secondary w-100">Filter</button>
+                <button type="submit" class="btn btn-secondary w-100" title="Filter"><i class="bi bi-filter"></i></button>
             </div>
         </form>
     </div>

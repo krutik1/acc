@@ -44,7 +44,7 @@
             </div>
             <div class="col-md-3">
                 <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-sm btn-primary flex-grow-1">Filter</button>
+                    <button type="submit" class="btn btn-sm btn-primary flex-grow-1" title="Filter"><i class="bi bi-filter"></i></button>
                     <a href="{{ route('admin.trips.index') }}" class="btn btn-sm btn-outline-secondary">Reset</a>
                 </div>
             </div>

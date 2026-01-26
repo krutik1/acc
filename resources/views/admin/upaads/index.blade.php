@@ -29,7 +29,7 @@
                 <input type="date" name="date_to" class="form-control" value="{{ request('date_to') }}" placeholder="To Date" aria-label="To Date">
             </div>
             <div class="col-md-3">
-                <button type="submit" class="btn btn-secondary w-100">Filter</button>
+                <button type="submit" class="btn btn-secondary w-100" title="Filter"><i class="bi bi-filter"></i></button>
             </div>
         </form>
     </div>
