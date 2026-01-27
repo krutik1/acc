@@ -11,10 +11,15 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->web(append: [
+            \App\Http\Middleware\CheckInstalled::class,
+        ]);
+
         $middleware->alias([
             'company' => \App\Http\Middleware\SetCompany::class,
             'role' => \App\Http\Middleware\RoleMiddleware::class,
             'blocked.check' => \App\Http\Middleware\CheckDriverBlocked::class,
+            'installed' => \App\Http\Middleware\CheckInstalled::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

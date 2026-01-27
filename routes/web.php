@@ -19,6 +19,22 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 
+// Installation Routes
+Route::prefix('install')->name('install.')->group(function () {
+    Route::get('/', [App\Http\Controllers\InstallController::class, 'index'])->name('index');
+    Route::get('/requirements', [App\Http\Controllers\InstallController::class, 'requirements'])->name('requirements');
+    Route::get('/permissions', [App\Http\Controllers\InstallController::class, 'permissions'])->name('permissions');
+    Route::get('/database', [App\Http\Controllers\InstallController::class, 'database'])->name('database');
+    Route::post('/database', [App\Http\Controllers\InstallController::class, 'storeDatabase'])->name('database.store');
+    Route::get('/admin', [App\Http\Controllers\InstallController::class, 'admin'])->name('admin');
+    Route::post('/admin', [App\Http\Controllers\InstallController::class, 'storeAdmin'])->name('admin.store');
+});
+
+/**
+ * Web Routes
+ *
+ * Note: CheckInstalled middleware is global, so it protects '/' and redirects to '/install' if needed.
+ */
 Route::get('/', function () {
     if (auth()->check()) {
         if (auth()->user()->hasRole('driver')) {
@@ -129,6 +145,10 @@ Route::middleware(['auth', 'company', 'role:admin'])->group(function () {
 
     // Admin Transportation Routes
     Route::prefix('admin')->name('admin.')->group(function () {
+        // System Updates
+        Route::get('/settings/updates', [\App\Http\Controllers\UpdateController::class, 'index'])->name('settings.updates');
+        Route::post('/settings/updates', [\App\Http\Controllers\UpdateController::class, 'update'])->name('settings.updates.perform');
+
         // Employees
         Route::resource('employees', \App\Http\Controllers\EmployeeController::class);
         

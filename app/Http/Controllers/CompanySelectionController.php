@@ -17,6 +17,11 @@ class CompanySelectionController extends Controller
         }
 
         $companies = Company::orderBy('name')->get();
+
+        if ($companies->isEmpty()) {
+            return redirect()->route('companies.create');
+        }
+
         return view('companies.select', compact('companies'));
     }
 

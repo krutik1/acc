@@ -141,7 +141,13 @@
         }
         
         .main-content {
-            padding: 2rem !important;
+            padding: 1.5rem !important;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 1rem !important;
+            }
         }
         
         /* Buttons */
@@ -518,13 +524,22 @@
                                     </li>
                                 </ul>
                             </div>
+
+                        </li>
+                        <li class="nav-item mt-3">
+                            <h6 class="ps-4 ms-2 text-uppercase text-xs font-weight-bolder opacity-6">System</h6>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('admin.settings.updates') ? 'active' : '' }}" href="{{ route('admin.settings.updates') }}">
+                                <i class="bi bi-gear me-2"></i>System Update
+                            </a>
                         </li>
                     @endif
                 </nav>
             </div>
             
             <!-- Main Content -->
-            <main class="col-md-10 ms-auto py-4 px-4 main-content">
+            <main class="col main-content">
                 @if(session('success'))
                     <div class="alert alert-success alert-dismissible fade show" role="alert">
                         <i class="bi bi-check-circle me-2"></i>{{ session('success') }}

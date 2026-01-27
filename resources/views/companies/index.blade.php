@@ -112,7 +112,7 @@
         </table>
     </div>
 </div>
-</div>
+
 
 @if($companies->hasPages())
 <div class="d-flex justify-content-center mt-4">

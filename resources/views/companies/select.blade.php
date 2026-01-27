@@ -1,4 +1,4 @@
-@extends('layouts.main')
+@extends('layouts.setup')
 
 @section('title', 'Select Company')
 

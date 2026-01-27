@@ -12,6 +12,11 @@ return [
     | other UI elements where an application name needs to be displayed.
     |
     */
+    
+    'update_url' => env('UPDATE_URL'),
+    'version' => env('APP_VERSION', '1.0.0'),
+
+    /*
 
     'name' => env('APP_NAME', 'INVOICE'),
 

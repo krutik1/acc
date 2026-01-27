@@ -1,4 +1,4 @@
-@extends('layouts.main')
+@extends(session('selected_company_id') ? 'layouts.main' : 'layouts.setup')
 
 @section('title', 'Create Company')
 
