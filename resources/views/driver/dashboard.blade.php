@@ -103,14 +103,14 @@
                         <div class="fw-bold">Trip Rate</div>
                         <small class="text-muted">Per Trip</small>
                     </div>
-                    <span class="fw-bold">₹{{ number_format(auth()->user()->trip_rate, 2) }}</span>
+                    <span class="fw-bold">₹{{ formatIndianCurrency(auth()->user()->trip_rate) }}</span>
                 </div>
                 <div class="list-group-item d-flex justify-content-between align-items-center">
                     <div>
                         <div class="fw-bold">PCS Rate</div>
                         <small class="text-muted">Per Unit</small>
                     </div>
-                    <span class="fw-bold">₹{{ number_format(auth()->user()->pcs_rate, 2) }}</span>
+                    <span class="fw-bold">₹{{ formatIndianCurrency(auth()->user()->pcs_rate) }}</span>
                 </div>
             </div>
         </div>

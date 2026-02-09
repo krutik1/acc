@@ -116,9 +116,9 @@
         /* Specific Column Widths */
         .col-ch-no { width: 10%; }
         .col-ch-date { width: 12%; }
-        .col-particulars { width: 45%; }
-        /* .col-hsn removed */
-        .col-qty { width: 10%; }
+        .col-particulars { width: 40%; }
+        .col-hsn { width: 10%; }
+        .col-qty { width: 8%; }
         .col-rate { width: 10%; }
         .col-amount { width: 13%; }
 
@@ -239,6 +239,7 @@
                 <th class="col-ch-no">Ch. No</th>
                 <th class="col-ch-date">Ch. Date</th>
                 <th class="col-particulars">PARTICULARS</th>
+                <th class="col-hsn">HSN/SAC</th>
                 <th class="col-qty">Pcs</th>
                 <th class="col-rate">RATE</th>
                 <th class="col-amount">AMOUNT</th>
@@ -261,9 +262,10 @@
                         <td class="text-center">{{ $challan->challan_number }}</td>
                         <td class="text-center">{{ $challan->challan_date->format('d/m/y') }}</td>
                         <td>{{ $item->description }}</td>
+                        <td class="text-center">{{ $item->hsn_code ?? '-' }}</td>
                         <td class="text-right">{{ number_format($item->quantity, 2) }}</td>
-                        <td class="text-right">{{ number_format($item->rate, 2) }}</td>
-                        <td class="text-right">{{ number_format($item->amount, 2) }}</td>
+                        <td class="text-right">{{ formatIndianCurrency($item->rate) }}</td>
+                        <td class="text-right">{{ formatIndianCurrency($item->amount) }}</td>
                     </tr>
                 @endforeach
             @endforeach
@@ -277,15 +279,16 @@
                     <td style="border-bottom: none;"></td>
                     <td style="border-bottom: none;"></td>
                     <td style="border-bottom: none;"></td>
+                    <td style="border-bottom: none;"></td>
                 </tr>
             @endfor
             
             <!-- Total Row -->
             <tr class="total-row">
-                <td colspan="3" class="text-right">Total</td>
+                <td colspan="4" class="text-right">Total</td>
                 <td class="text-right">{{ number_format($totalMtrs, 2) }}</td>
                 <td></td>
-                <td class="text-right">{{ number_format($totalAmount, 2) }}</td>
+                <td class="text-right">{{ formatIndianCurrency($totalAmount) }}</td>
             </tr>
         </tbody>
     </table>
@@ -332,28 +335,28 @@
                 <tr>
                     <td>Discount {{ $invoice->discount_type == 'percentage' ? '('.$invoice->discount_value.'%)' : '' }}</td>
                     <td></td>
-                    <td>- {{ number_format($invoice->discount_amount, 2) }}</td>
+                    <td>- {{ formatIndianCurrency($invoice->discount_amount) }}</td>
                 </tr>
                 @endif
                 <tr>
                     <td>CGST</td>
                     <td>{{ number_format($invoice->gst_percent / 2, 2) }} %</td>
-                    <td>{{ number_format($cgstAmount, 2) }}</td>
+                    <td>{{ formatIndianCurrency($cgstAmount) }}</td>
                 </tr>
                 <tr>
                     <td>SGST</td>
                     <td>{{ number_format($invoice->gst_percent / 2, 2) }} %</td>
-                    <td>{{ number_format($sgstAmount, 2) }}</td>
+                    <td>{{ formatIndianCurrency($sgstAmount) }}</td>
                 </tr>
                 <tr>
                     <td>Rounding</td>
                     <td>{{ number_format(0, 2) }} %</td>
-                    <td>{{ number_format($rounding, 2) }}</td>
+                    <td>{{ formatIndianCurrency($rounding) }}</td>
                 </tr>
             </table>
             
             <div class="grand-total">
-                Total Amount : {{ number_format($invoice->final_amount, 2) }}
+                Total Amount : {{ formatIndianCurrency($invoice->final_amount) }}
             </div>
             
             <div class="signature">

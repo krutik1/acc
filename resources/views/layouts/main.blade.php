@@ -19,9 +19,9 @@
     @endif
 
     <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{{ asset('assets/vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
     <!-- Bootstrap Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="{{ asset('assets/vendor/bootstrap-icons/css/bootstrap-icons.css') }}" rel="stylesheet">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
@@ -321,6 +321,11 @@
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link text-dark {{ request()->routeIs('items.*') ? 'active' : '' }}" href="{{ route('items.index') }}">
+                            <i class="bi bi-box-seam me-2"></i>Item Master
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link text-dark {{ request()->routeIs('challans.*') ? 'active' : '' }}" href="{{ route('challans.index') }}">
                             <i class="bi bi-file-text me-2"></i>Challans
                         </a>
@@ -333,6 +338,11 @@
                     <li class="nav-item">
                         <a class="nav-link text-dark {{ request()->routeIs('payments.*') ? 'active' : '' }}" href="{{ route('payments.index') }}">
                             <i class="bi bi-cash-stack me-2"></i>Payments
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-dark {{ request()->routeIs('bank-accounts.*') ? 'active' : '' }}" href="{{ route('bank-accounts.index') }}">
+                            <i class="bi bi-bank me-2"></i>Banks
                         </a>
                     </li>
                     <li class="nav-item dropdown">
@@ -443,6 +453,9 @@
                         <a class="nav-link {{ request()->routeIs('parties.*') ? 'active' : '' }}" href="{{ route('parties.index') }}">
                             <i class="bi bi-people"></i>Parties
                         </a>
+                        <a class="nav-link {{ request()->routeIs('items.*') ? 'active' : '' }}" href="{{ route('items.index') }}">
+                            <i class="bi bi-box-seam"></i>Item Master
+                        </a>
                         <a class="nav-link {{ request()->routeIs('challans.*') ? 'active' : '' }}" href="{{ route('challans.index') }}">
                             <i class="bi bi-file-text"></i>Challans
                         </a>
@@ -452,11 +465,43 @@
                         <a class="nav-link {{ request()->routeIs('payments.*') ? 'active' : '' }}" href="{{ route('payments.index') }}">
                             <i class="bi bi-cash-stack"></i>Payments
                         </a>
+                        <a class="nav-link {{ request()->routeIs('bank-accounts.*') ? 'active' : '' }}" href="{{ route('bank-accounts.index') }}">
+                            <i class="bi bi-bank"></i>Banks
+                        </a>
                         <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('admin.drivers.*') || request()->routeIs('admin.trips.*') || request()->routeIs('admin.driver-payments.*') || request()->routeIs('admin.driver-salaries.*') ? 'active' : '' }}" href="#transportationSubmenu" data-bs-toggle="collapse" aria-expanded="{{ request()->routeIs('admin.drivers.*') || request()->routeIs('admin.trips.*') || request()->routeIs('admin.driver-payments.*') || request()->routeIs('admin.driver-salaries.*') ? 'true' : 'false' }}">
+                            <a class="nav-link {{ request()->routeIs('expenses.*') || request()->routeIs('expense-categories.*') || request()->routeIs('units.*') ? 'active' : '' }}" href="#expensesSubmenu" data-bs-toggle="collapse" aria-expanded="{{ request()->routeIs('expenses.*') || request()->routeIs('expense-categories.*') || request()->routeIs('units.*') ? 'true' : 'false' }}">
+                                <i class="bi bi-wallet me-2"></i>Expenses <i class="bi bi-chevron-down ms-auto" style="font-size: 0.8em;"></i>
+                            </a>
+                            <div class="collapse {{ request()->routeIs('expenses.*') || request()->routeIs('expense-categories.*') || request()->routeIs('units.*') ? 'show' : '' }}" id="expensesSubmenu">
+                                <ul class="nav flex-column ps-3">
+                                    <li class="nav-item">
+                                        <a class="nav-link {{ request()->routeIs('expenses.*') ? 'active' : '' }}" href="{{ route('expenses.index') }}" style="padding-top: 8px; padding-bottom: 8px;">
+                                            Expenses
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link {{ request()->routeIs('expense-categories.*') ? 'active' : '' }}" href="{{ route('expense-categories.index') }}" style="padding-top: 8px; padding-bottom: 8px;">
+                                            Expense Categories
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link {{ request()->routeIs('units.*') ? 'active' : '' }}" href="{{ route('units.index') }}" style="padding-top: 8px; padding-bottom: 8px;">
+                                            Units
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link {{ request()->routeIs('expenses.reports.*') ? 'active' : '' }}" href="{{ route('expenses.reports.monthly') }}" style="padding-top: 8px; padding-bottom: 8px;">
+                                            Reports
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('admin.drivers.*') || request()->routeIs('admin.trips.*') || request()->routeIs('admin.driver-payments.*') || request()->routeIs('admin.driver-salaries.*') || request()->routeIs('admin.transport.reports.*') ? 'active' : '' }}" href="#transportationSubmenu" data-bs-toggle="collapse" aria-expanded="{{ request()->routeIs('admin.drivers.*') || request()->routeIs('admin.trips.*') || request()->routeIs('admin.driver-payments.*') || request()->routeIs('admin.driver-salaries.*') || request()->routeIs('admin.transport.reports.*') ? 'true' : 'false' }}">
                                 <i class="bi bi-truck me-2"></i>Transportation <i class="bi bi-chevron-down ms-auto" style="font-size: 0.8em;"></i>
                             </a>
-                            <div class="collapse {{ request()->routeIs('admin.drivers.*') || request()->routeIs('admin.trips.*') || request()->routeIs('admin.driver-payments.*') || request()->routeIs('admin.driver-salaries.*') ? 'show' : '' }}" id="transportationSubmenu">
+                            <div class="collapse {{ request()->routeIs('admin.drivers.*') || request()->routeIs('admin.trips.*') || request()->routeIs('admin.driver-payments.*') || request()->routeIs('admin.driver-salaries.*') || request()->routeIs('admin.transport.reports.*') ? 'show' : '' }}" id="transportationSubmenu">
                                 <ul class="nav flex-column ps-3">
                                     <li class="nav-item">
                                         <a class="nav-link {{ request()->routeIs('admin.drivers.*') ? 'active' : '' }}" href="{{ route('admin.drivers.index') }}" style="padding-top: 8px; padding-bottom: 8px;">
@@ -560,7 +605,7 @@
     </div>
     
     <!-- Bootstrap 5 JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ asset('assets/vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
     @stack('scripts')
 </body>
 </html>

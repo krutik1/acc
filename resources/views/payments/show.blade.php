@@ -50,7 +50,7 @@
                 </div>
 
                 <div class="p-4 bg-light rounded text-center mb-4">
-                    <h3 class="mb-0 display-6">₹{{ number_format($payment->amount, 2) }}</h3>
+                    <h3 class="mb-0 display-6">₹{{ formatIndianCurrency($payment->amount) }}</h3>
                     <small class="text-muted">Amount Paid</small>
                 </div>
 

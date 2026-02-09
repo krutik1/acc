@@ -90,7 +90,7 @@
                         </div>
                     </td>
                     <td>{{ $challan->items_count ?? $challan->items->count() }}</td>
-                    <td class="text-end fw-bold">₹{{ number_format($challan->subtotal, 2) }}</td>
+                    <td class="text-end fw-bold">₹{{ formatIndianCurrency($challan->subtotal) }}</td>
                     <td>
                         @if($challan->is_invoiced)
                             <span class="badge bg-success">Invoiced</span>

@@ -96,7 +96,7 @@
                     @foreach($challan->items as $index => $item)
                     <tr class="item-row">
                         <td>
-                            <input type="text" class="form-control form-control-sm enable-autocomplete" 
+                            <input type="text" class="form-control form-control-sm enable-autocomplete item-description" 
                                    data-type="challan_item_description"
                                    name="items[{{ $index }}][description]" 
                                    value="{{ old("items.$index.description", $item->description) }}" required autocomplete="off">
@@ -107,7 +107,7 @@
                                    value="{{ old("items.$index.quantity", $item->quantity) }}" required>
                         </td>
                         <td>
-                            <select class="form-select form-select-sm" name="items[{{ $index }}][unit]">
+                            <select class="form-select form-select-sm item-unit" name="items[{{ $index }}][unit]">
                                 @foreach($units as $key => $label)
                                     <option value="{{ $key }}" {{ $item->unit == $key ? 'selected' : '' }}>{{ $key }}</option>
                                 @endforeach
@@ -235,12 +235,12 @@ document.addEventListener('DOMContentLoaded', function() {
         newRow.className = 'item-row';
         newRow.innerHTML = `
             <td>
-                <input type="text" class="form-control form-control-sm enable-autocomplete" 
+                <input type="text" class="form-control form-control-sm enable-autocomplete item-description" 
                        data-type="challan_item_description"
                        name="items[${itemIndex}][description]" required autocomplete="off">
             </td>
             <td><input type="number" step="0.001" min="0.001" class="form-control form-control-sm item-qty" name="items[${itemIndex}][quantity]" required></td>
-            <td><select class="form-select form-select-sm" name="items[${itemIndex}][unit]">${unitOptions}</select></td>
+            <td><select class="form-select form-select-sm item-unit" name="items[${itemIndex}][unit]">${unitOptions}</select></td>
             <td><input type="number" step="0.01" min="0" class="form-control form-control-sm item-rate" name="items[${itemIndex}][rate]" required></td>
             <td><input type="text" class="form-control form-control-sm item-amount" readonly disabled></td>
             <td><button type="button" class="btn btn-sm btn-outline-danger remove-item"><i class="bi bi-trash"></i></button></td>
@@ -282,6 +282,32 @@ document.addEventListener('DOMContentLoaded', function() {
         const rows = document.querySelectorAll('.item-row');
         rows.forEach(row => row.querySelector('.remove-item').disabled = rows.length === 1);
     }
+
+    // Auto-fill Item Details
+    itemsBody.addEventListener('focusout', function(e) {
+        if (e.target.classList.contains('item-description')) {
+            const row = e.target.closest('.item-row');
+            const name = e.target.value.trim();
+            
+            if (name.length > 0) {
+                fetch(`/api/items/search?q=${encodeURIComponent(name)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Find exact match
+                        const item = data.find(i => i.name.toLowerCase() === name.toLowerCase());
+                        if (item) {
+                            // HSN no longer in UI
+                            // row.querySelector('.item-hsn').value = item.hsn_code || '';
+                            row.querySelector('.item-rate').value = item.rate || '';
+                            row.querySelector('.item-unit').value = item.unit || 'pcs';
+                            
+                            // Trigger calculation
+                            row.querySelector('.item-qty').dispatchEvent(new Event('input', { bubbles: true }));
+                        }
+                    });
+            }
+        }
+    });
 });
 </script>
 @endpush

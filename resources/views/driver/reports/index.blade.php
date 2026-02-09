@@ -3,7 +3,7 @@
 @section('title', 'My Reports')
 
 @section('content')
-<div class="page-header d-flex justify-content-between align-items-center mb-4">
+<div class="page-header d-flex justify-content-between align-items-center mb-4" style="position: relative; z-index: 100;">
     <h1>My Reports</h1>
     <div class="dropdown">
         <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">

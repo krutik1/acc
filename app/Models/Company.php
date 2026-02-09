@@ -41,4 +41,13 @@ class Company extends Model
     {
         return static::where('is_default', true)->first() ?? static::first();
     }
+    public function bankAccounts()
+    {
+        return $this->hasMany(BankAccount::class);
+    }
+
+    public function units()
+    {
+        return $this->hasMany(Unit::class);
+    }
 }

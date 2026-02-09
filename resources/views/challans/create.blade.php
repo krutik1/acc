@@ -95,7 +95,7 @@
                 <tbody id="itemsBody">
                     <tr class="item-row">
                         <td>
-                            <input type="text" class="form-control form-control-sm enable-autocomplete" 
+                            <input type="text" class="form-control form-control-sm enable-autocomplete item-description" 
                                    data-type="challan_item_description"
                                    name="items[0][description]" required autocomplete="off">
                         </td>
@@ -104,7 +104,7 @@
                                    name="items[0][quantity]" required>
                         </td>
                         <td>
-                            <select class="form-select form-select-sm" name="items[0][unit]">
+                            <select class="form-select form-select-sm item-unit" name="items[0][unit]">
                                 @foreach($units as $key => $label)
                                     <option value="{{ $key }}">{{ $key }}</option>
                                 @endforeach
@@ -235,7 +235,7 @@ document.addEventListener('DOMContentLoaded', function() {
         newRow.className = 'item-row';
         newRow.innerHTML = `
             <td>
-                <input type="text" class="form-control form-control-sm enable-autocomplete" 
+                <input type="text" class="form-control form-control-sm enable-autocomplete item-description" 
                        data-type="challan_item_description"
                        name="items[${itemIndex}][description]" required autocomplete="off">
             </td>
@@ -244,7 +244,7 @@ document.addEventListener('DOMContentLoaded', function() {
                        name="items[${itemIndex}][quantity]" required>
             </td>
             <td>
-                <select class="form-select form-select-sm" name="items[${itemIndex}][unit]">
+                <select class="form-select form-select-sm item-unit" name="items[${itemIndex}][unit]">
                     ${unitOptions}
                 </select>
             </td>
@@ -304,6 +304,32 @@ document.addEventListener('DOMContentLoaded', function() {
             btn.disabled = rows.length === 1;
         });
     }
+
+    // Auto-fill Item Details
+    itemsBody.addEventListener('focusout', function(e) {
+        if (e.target.classList.contains('item-description')) {
+            const row = e.target.closest('.item-row');
+            const name = e.target.value.trim();
+            
+            if (name.length > 0) {
+                fetch(`/api/items/search?q=${encodeURIComponent(name)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Find exact match
+                        const item = data.find(i => i.name.toLowerCase() === name.toLowerCase());
+                        if (item) {
+                            // HSN no longer in UI
+                            // row.querySelector('.item-hsn').value = item.hsn_code || '';
+                            row.querySelector('.item-rate').value = item.rate || '';
+                            row.querySelector('.item-unit').value = item.unit || 'pcs'; // Assuming unit select has class item-unit
+                            
+                            // Trigger calculation
+                            row.querySelector('.item-qty').dispatchEvent(new Event('input', { bubbles: true }));
+                        }
+                    });
+            }
+        }
+    });
 });
 </script>
 @endpush

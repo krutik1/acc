@@ -84,13 +84,13 @@
                     <div class="col-md-6">
                          <div class="p-3 bg-success bg-opacity-10 rounded-3 text-center">
                             <p class="text-muted mb-1">Income</p>
-                            <h3 class="fw-bold text-success mb-0">₹ {{ number_format($stats['total_income'], 2) }}</h3>
+                            <h3 class="fw-bold text-success mb-0">₹ {{ formatIndianCurrency($stats['total_income']) }}</h3>
                          </div>
                     </div>
                     <div class="col-md-6">
                          <div class="p-3 bg-danger bg-opacity-10 rounded-3 text-center">
                             <p class="text-muted mb-1">Expense</p>
-                            <h3 class="fw-bold text-danger mb-0">₹ {{ number_format($stats['total_expense'], 2) }}</h3>
+                            <h3 class="fw-bold text-danger mb-0">₹ {{ formatIndianCurrency($stats['total_expense']) }}</h3>
                          </div>
                     </div>
                 </div>

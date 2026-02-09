@@ -58,9 +58,9 @@
                                     <span class="fw-medium">{{ $salary->user->name }}</span>
                                 </div>
                             </td>
-                            <td>₹{{ number_format($salary->total_amount, 2) }}</td>
-                            <td class="text-danger">-₹{{ number_format($salary->total_upaad, 2) }}</td>
-                            <td class="fw-bold text-success">₹{{ number_format($salary->payable_amount, 2) }}</td>
+                            <td>₹{{ formatIndianCurrency($salary->total_amount) }}</td>
+                            <td class="text-danger">-₹{{ formatIndianCurrency($salary->total_upaad) }}</td>
+                            <td class="fw-bold text-success">₹{{ formatIndianCurrency($salary->payable_amount) }}</td>
                             <td>
                                 @if($salary->status == 'paid')
                                     <span class="badge bg-success">Paid</span>

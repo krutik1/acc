@@ -69,9 +69,9 @@
                     <td><a href="{{ route('invoices.show', $invoice) }}"><strong>{{ $invoice->invoice_number }}</strong></a></td>
                     <td>{{ $invoice->invoice_date->format('d/m/Y') }}</td>
                     <td>{{ $invoice->party->name }}</td>
-                    <td class="text-end">₹{{ number_format($invoice->subtotal, 2) }}</td>
-                    <td class="text-end">₹{{ number_format($invoice->gst_amount, 2) }}</td>
-                    <td class="text-end"><strong class="text-primary">₹{{ number_format($invoice->final_amount, 2) }}</strong></td>
+                    <td class="text-end">₹{{ formatIndianCurrency($invoice->subtotal) }}</td>
+                    <td class="text-end">₹{{ formatIndianCurrency($invoice->gst_amount) }}</td>
+                    <td class="text-end"><strong class="text-primary">₹{{ formatIndianCurrency($invoice->final_amount) }}</strong></td>
                     <td>
                         <a href="{{ route('invoices.show', $invoice) }}" class="action-btn bg-warning me-1" title="View">
                             <i class="bi bi-eye-fill text-white" style="font-size: 0.8rem;"></i>

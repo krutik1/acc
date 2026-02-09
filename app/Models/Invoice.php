@@ -76,7 +76,7 @@ class Invoice extends Model
     public function challans(): BelongsToMany
     {
         return $this->belongsToMany(Challan::class, 'invoice_challans')
-                    ->withTimestamps();
+            ->withTimestamps();
     }
 
     /**
@@ -103,19 +103,19 @@ class Invoice extends Model
         } else {
             $discountAmount = round(min($discountValue, $subtotal), 2);
         }
-        
+
         // Step 2: Apply discount to get discounted subtotal
         $discountedSubtotal = round($subtotal - $discountAmount, 2);
-        
+
         // Step 3: Calculate GST on the discounted amount (after discount)
         $gstAmount = round($discountedSubtotal * ($gstPercent / 100), 2);
-        
+
         // Step 4: Calculate TDS on the discounted amount
         $tdsAmount = round($discountedSubtotal * ($tdsPercent / 100), 2);
-        
+
         // Step 5: Final amount = Discounted Subtotal + GST - TDS
         $finalAmount = round($discountedSubtotal + $gstAmount - $tdsAmount, 2);
-        
+
         return [
             'subtotal' => $subtotal,
             'gst_amount' => $gstAmount,
@@ -134,45 +134,34 @@ class Invoice extends Model
      */
     public static function generateInvoiceNumber(?int $companyId = null): string
     {
-        $prefix = 'INV';
-        
-        // Calculate Financial Year
-        // If current month is Jan(1), Feb(2), Mar(3), then FY started in previous year.
-        // If current month is >= April(4), then FY started in current year.
-        $currentMonth = (int) date('m');
-        $currentYear = (int) date('Y');
-        
-        if ($currentMonth < 4) {
-            $fyStartYear = $currentYear - 1;
-        } else {
-            $fyStartYear = $currentYear;
-        }
-        
-        // Define FY Date Range for querying
-        $fyStartDate = "{$fyStartYear}-04-01 00:00:00";
-        $fyEndDate = ($fyStartYear + 1) . "-03-31 23:59:59";
-        
-        $query = static::whereBetween('invoice_date', [$fyStartDate, $fyEndDate]);
-        
+        // Use Current Calendar Year as per user requirement
+        $year = date('Y');
+        $prefix = "INV{$year}";
+
+        // Search by prefix instead of date range to ensure uniqueness
+        $query = static::where('invoice_number', 'like', "{$prefix}%");
+
         if ($companyId) {
-             $query->where('company_id', $companyId);
+            $query->where('company_id', $companyId);
         }
-        
-        // Get last invoice of this FY
-        $lastInvoice = $query->orderBy('invoice_number', 'desc')->first();
-        
+
+        // Get the latest invoice with this prefix
+        // We order by length first to handle variable lengths correctly (e.g. 10 vs 100), then by value
+        $lastInvoice = $query->orderByRaw('LENGTH(invoice_number) DESC')
+            ->orderBy('invoice_number', 'desc')
+            ->first();
+
         if ($lastInvoice) {
-            // Extract sequence from format INV<YEAR><SEQUENCE> (e.g., INV2025001)
-            // Length of "INV" + "2025" is 3+4=7 characters.
-            // Remaining part is sequence.
-            $lastSequence = (int) substr($lastInvoice->invoice_number, 7);
-            $newSequence = $lastSequence + 1;
+            // Extract the numeric part after the prefix
+            // Prefix length = 3 (INV) + 4 (Year) = 7
+            $sequence = (int) substr($lastInvoice->invoice_number, 7);
+            $newSequence = $sequence + 1;
         } else {
             $newSequence = 1;
         }
-        
-        // Padded to 3 digits as requested (001)
-        return $prefix . $fyStartYear . str_pad($newSequence, 3, '0', STR_PAD_LEFT);
+
+        // Pad to at least 3 digits (e.g. 001, 002, 010, 100)
+        return $prefix . str_pad($newSequence, 3, '0', STR_PAD_LEFT);
     }
 
     /**

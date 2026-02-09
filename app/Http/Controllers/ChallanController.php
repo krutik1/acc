@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ChallanRequest;
 use App\Models\Challan;
 use App\Models\ChallanItem;
+use App\Models\Item;
 use App\Models\Party;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -50,7 +51,7 @@ class ChallanController extends Controller
             $query->where('subtotal', '<=', $request->max_amount);
         }
 
-        $challans = $query->orderBy('challan_date', 'desc')->paginate(10);
+        $challans = $query->orderBy('challan_date', 'desc')->orderBy('id', 'desc')->paginate(10);
         $parties = Party::where('company_id', $companyId)->orderBy('name')->get();
 
         return view('challans.index', compact('challans', 'parties'));
@@ -75,13 +76,13 @@ class ChallanController extends Controller
     public function store(ChallanRequest $request)
     {
         DB::beginTransaction();
-        
+
         try {
             // Determine challan number - use provided or auto-generate
-            $challanNumber = !empty($request->challan_number) 
-                ? $request->challan_number 
+            $challanNumber = !empty($request->challan_number)
+                ? $request->challan_number
                 : Challan::generateChallanNumber();
-            
+
             // Create challan
             $challan = Challan::create([
                 'company_id' => $this->getCompanyId(),
@@ -101,11 +102,15 @@ class ChallanController extends Controller
                 ChallanItem::create([
                     'challan_id' => $challan->id,
                     'description' => $itemData['description'],
+                    // 'hsn_code' => $itemData['hsn_code'], // Removed from UI
                     'quantity' => $itemData['quantity'],
                     'unit' => $itemData['unit'],
                     'rate' => $itemData['rate'],
                     'amount' => $amount,
                 ]);
+
+                // Auto-save Item to Master
+                $this->autoSaveItem($itemData);
             }
 
             // Update subtotal
@@ -168,10 +173,10 @@ class ChallanController extends Controller
 
         try {
             // Determine challan number - use provided or keep existing
-            $challanNumber = !empty($request->challan_number) 
-                ? $request->challan_number 
+            $challanNumber = !empty($request->challan_number)
+                ? $request->challan_number
                 : $challan->challan_number;
-            
+
             // Update challan details
             $challan->update([
                 'party_id' => $request->party_id,
@@ -191,11 +196,15 @@ class ChallanController extends Controller
                 ChallanItem::create([
                     'challan_id' => $challan->id,
                     'description' => $itemData['description'],
+                    // 'hsn_code' => $itemData['hsn_code'], // Removed from UI
                     'quantity' => $itemData['quantity'],
                     'unit' => $itemData['unit'],
                     'rate' => $itemData['rate'],
                     'amount' => $amount,
                 ]);
+
+                // Auto-save Item to Master
+                $this->autoSaveItem($itemData);
             }
 
             // Update subtotal
@@ -253,9 +262,9 @@ class ChallanController extends Controller
         $currentInvoiceId = $request->query('current_invoice_id');
 
         $challans = $party->challans()
-            ->where(function($q) use ($companyId) {
+            ->where(function ($q) use ($companyId) {
                 $q->where('company_id', $companyId)
-                  ->orWhereNull('company_id');
+                    ->orWhereNull('company_id');
             })
             ->with(['items', 'invoices'])
             ->orderBy('challan_date', 'desc')
@@ -272,18 +281,15 @@ class ChallanController extends Controller
                 // 2. Check if attached to any OTHER invoice
                 // We use the relationship count as the source of truth instead of is_invoiced flag
                 $lastInvoice = $challan->invoices()->latest('updated_at')->first();
-                
+
                 // If no invoice attached, shows it
                 if (!$lastInvoice) {
                     return true;
                 }
-                
-                // If attached, check if edited significantly AFTER the invoice was created
-                // We reduce the buffer to 1 second to catch updates that happen after invoicing
-                if ($challan->updated_at > $lastInvoice->updated_at->copy()->addSeconds(1)) {
-                    return true;
-                }
-                
+
+                // If attached, DO NOT show it unless it is the current invoice's challan (handled in step 1)
+                return false;
+
                 return false;
             })
             ->values() // Reset keys after filter
@@ -299,6 +305,7 @@ class ChallanController extends Controller
                     'items' => $challan->items->map(function ($item) {
                         return [
                             'description' => $item->description,
+                            // 'hsn_code' => $item->hsn_code, // Removed from UI
                             'quantity' => $item->quantity,
                             'unit' => $item->unit,
                             'rate' => number_format($item->rate, 2),
@@ -332,7 +339,7 @@ class ChallanController extends Controller
 
         $query = Challan::where('challan_number', $request->challan_number)
             ->where('company_id', $this->getCompanyId());
-        
+
         // Exclude current challan if editing
         if ($request->challan_id) {
             $query->where('id', '!=', $request->challan_id);
@@ -344,5 +351,29 @@ class ChallanController extends Controller
             'exists' => $exists,
             'message' => $exists ? 'This challan number already exists.' : '',
         ]);
+    }
+
+    /**
+     * Auto-save item to master if not exists.
+     */
+    private function autoSaveItem(array $itemData)
+    {
+        $companyId = $this->getCompanyId();
+
+        // precise matching by name and company
+        $existingItem = Item::where('company_id', $companyId)
+            ->where('name', $itemData['description'])
+            ->first();
+
+        if (!$existingItem) {
+            Item::create([
+                'company_id' => $companyId,
+                'name' => $itemData['description'],
+                // 'hsn_code' => $itemData['hsn_code'] ?? null, // Removed from UI
+                'rate' => $itemData['rate'],
+                'unit' => $itemData['unit'],
+                'status' => 'active',
+            ]);
+        }
     }
 }

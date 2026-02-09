@@ -69,7 +69,7 @@ class TripController extends Controller
         // Oops, Trip model used 'quantity' in my previous edit?
         // Let's check Trip.php from previous turns. Yes, I changed it to use 'quantity'.
         // $trip->quantity is in $validated.
-        
+
         $trip->save();
 
         return redirect()->route('driver.trips.index')->with('success', 'Trip created successfully.');
@@ -104,6 +104,10 @@ class TripController extends Controller
     {
         if ($trip->user_id !== auth()->id()) {
             abort(403);
+        }
+
+        if ($trip->status === 'approved') {
+            return redirect()->back()->with('error', 'This trip has already been approved and can no longer be edited. Please contact the administrator if changes are required.');
         }
 
         $validated = $request->validate([

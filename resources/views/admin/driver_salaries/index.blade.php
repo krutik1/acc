@@ -63,18 +63,18 @@
                             <td>{{ \Carbon\Carbon::parse($salary->month)->format('M Y') }}</td>
                             <td>{{ $salary->total_trips }}</td>
                             <td>
-                                <strong>{{ number_format($salary->total_amount, 2) }}</strong><br>
-                                <small class="text-muted">Fixed: {{ number_format($salary->fixed_trip_amount, 2) }}</small><br>
-                                <small class="text-muted">PCS: {{ number_format($salary->pcs_trip_amount, 2) }}</small>
+                                <strong>{{ formatIndianCurrency($salary->total_amount) }}</strong><br>
+                                <small class="text-muted">Fixed: {{ formatIndianCurrency($salary->fixed_trip_amount) }}</small><br>
+                                <small class="text-muted">PCS: {{ formatIndianCurrency($salary->pcs_trip_amount) }}</small>
                             </td>
                             <td>
-                                <span class="text-danger">-{{ number_format($salary->advance_amount, 2) }}</span>
+                                <span class="text-danger">-{{ formatIndianCurrency($salary->advance_amount) }}</span>
                             </td>
                             <td>
-                                <span class="text-success">+{{ number_format($salary->bonus, 2) }}</span><br>
-                                <span class="text-danger">-{{ number_format($salary->deduction, 2) }}</span>
+                                <span class="text-success">+{{ formatIndianCurrency($salary->bonus) }}</span><br>
+                                <span class="text-danger">-{{ formatIndianCurrency($salary->deduction) }}</span>
                             </td>
-                            <td class="font-weight-bold">{{ number_format($salary->payable_amount, 2) }}</td>
+                            <td class="font-weight-bold">{{ formatIndianCurrency($salary->payable_amount) }}</td>
                             <td>
                                 @if($salary->status == 'paid')
                                     <span class="badge badge-success">Paid</span>

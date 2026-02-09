@@ -16,7 +16,7 @@ class UpdateService
         $currentVersion = config('app.version', '1.0.0');
 
         if (!class_exists('ZipArchive')) {
-             return [
+            return [
                 'current_version' => $currentVersion,
                 'available' => false,
                 'message' => 'PHP ZipArchive extension is not installed. Please enable it in php.ini.'
@@ -36,10 +36,10 @@ class UpdateService
 
             if ($response->successful()) {
                 $data = $response->json();
-                
+
                 // Validate response structure
                 if (!isset($data['version']) || !isset($data['download_url'])) {
-                     return [
+                    return [
                         'current_version' => $currentVersion,
                         'available' => false,
                         'message' => 'Invalid update server response.'
@@ -77,7 +77,7 @@ class UpdateService
         // 1. Check for valid update data first (redundant but safe)
         $check = $this->check();
         if (!$check['available']) {
-             return ['success' => false, 'message' => 'No update available or check failed.'];
+            return ['success' => false, 'message' => 'No update available or check failed.'];
         }
 
         return $this->performUpdate($check['latest_version'], $check['download_url']);
@@ -89,18 +89,18 @@ class UpdateService
         register_shutdown_function(function () {
             // Check if we are incorrectly in maintenance mode
             if (app()->isDownForMaintenance()) { // Laravel check, though 'app()' helper might not work in shutdown?
-                 // Safer: just call up. It's idempotent-ish (clears file)
-                 try {
-                     Artisan::call('up');
-                 } catch (\Exception $e) {
-                     // desperate logging
-                 }
+                // Safer: just call up. It's idempotent-ish (clears file)
+                try {
+                    Artisan::call('up');
+                } catch (\Exception $e) {
+                    // desperate logging
+                }
             }
         });
 
         try {
             // INCREASE TIMEOUT
-            set_time_limit(600); 
+            set_time_limit(600);
 
             // 1. Backup Database
             $backupResult = $this->backupDatabase();
@@ -120,17 +120,39 @@ class UpdateService
 
             // 4. Extract and Replace
             $extractResult = $this->extractAndReplace($tempPath);
-             if (!$extractResult) {
+            if (!$extractResult) {
                 Artisan::call('up');
                 return ['success' => false, 'message' => 'Failed to extract update package.'];
             }
 
             // 5. Run Migrations
+            Log::info("Update: Running migrations...");
             Artisan::call('migrate', ['--force' => true]);
+            Log::info("Update: Migrations completed.");
 
-            // 6. Clear Cache
-            Artisan::call('optimize:clear');
-            
+            // 6. Automated Post-Update Tasks
+            Log::info("Update: Running automated maintenance tasks...");
+
+            // 6a. Storage Link
+            if (!File::exists(public_path('storage'))) {
+                Log::info("Update: Creating storage link...");
+                Artisan::call('storage:link');
+            } else {
+                Log::info("Update: Storage link already exists.");
+            }
+
+            // 6b. Clear All Caches (Config, Route, View, Application)
+            Log::info("Update: Clearing caches...");
+            Artisan::call('optimize:clear'); // Clears config, route, view, and compiled class caches
+
+            // 6c. Re-cache Configuration (Optional but recommended for performance if in production)
+            // Artisan::call('config:cache'); 
+            // Artisan::call('route:cache');
+            // Artisan::call('view:cache');
+            // For now, leaving it cleared is safer to ensure fresh values are picked up.
+
+            Log::info("Update: Maintenance tasks completed.");
+
             // 7. Disable Maintenance Mode
             Artisan::call('up');
 
@@ -142,7 +164,7 @@ class UpdateService
                 File::delete($tempPath);
             }
 
-            return ['success' => true, 'message' => "System updated successfully to v{$version}"];
+            return ['success' => true, 'message' => "System updated successfully to v{$version}. Storage linked, migrations run, and caches cleared."];
 
         } catch (\Exception $e) {
             Artisan::call('up'); // Ensure we try to bring it back up
@@ -156,7 +178,7 @@ class UpdateService
         try {
             $filename = 'backup-' . date('Y-m-d-H-i-s') . '.sql';
             $path = storage_path("app/backups/$filename");
-            
+
             if (!File::exists(storage_path('app/backups'))) {
                 File::makeDirectory(storage_path('app/backups'), 0755, true);
             }
@@ -165,7 +187,7 @@ class UpdateService
             $dbName = config('database.connections.mysql.database');
             $dbUser = config('database.connections.mysql.username');
             $dbPass = config('database.connections.mysql.password');
-            
+
             // Password handling
             // Note: On Windows PowerShell, passing empty password might need care, 
             // but usually no -p flag is best if empty.
@@ -174,7 +196,7 @@ class UpdateService
 
             // Find mysqldump
             $mysqldump = 'mysqldump'; // Default to PATH
-            
+
             // Attempt to find specific Laragon path on C: or E:
             $laragonDrives = ['c:', 'e:'];
             foreach ($laragonDrives as $drive) {
@@ -191,7 +213,7 @@ class UpdateService
             // but acceptable for this local/controlled environment context.
             // Better approach: use .cnf file, but keeping it simple as per request.
             $command = "$mysqldump -h $dbHost -u $dbUser $passwordPart $dbName > \"$path\"";
-            
+
             // Log for debugging (exclude password if possible, but here we debug)
             Log::info("Running backup command: " . str_replace($dbPass, '****', $command));
 
@@ -201,18 +223,18 @@ class UpdateService
             // or we handle stdout capture ourselves.
             // Let's use standard exec just to be safe with the redirection operator > on Windows.
             // But we need stderr.
-            
+
             $output = [];
             $resultCode = 0;
             // 2>&1 to capture stderr in output
             exec("$command 2>&1", $output, $resultCode);
 
             if ($resultCode === 0 && File::exists($path) && File::size($path) > 0) {
-                 return ['success' => true, 'path' => $path];
+                return ['success' => true, 'path' => $path];
             } else {
-                 $errorMsg = implode("\n", $output);
-                 Log::error("Backup failed. Code: $resultCode. Output: $errorMsg");
-                 return ['success' => false, 'message' => "mysqldump failed (Code $resultCode): $errorMsg"];
+                $errorMsg = implode("\n", $output);
+                Log::error("Backup failed. Code: $resultCode. Output: $errorMsg");
+                return ['success' => false, 'message' => "mysqldump failed (Code $resultCode): $errorMsg"];
             }
 
         } catch (\Exception $e) {
@@ -234,14 +256,14 @@ class UpdateService
             $content = $response->body();
             $tempPath = storage_path('app/temp_update.zip');
             File::put($tempPath, $content);
-            
+
             // Basic validity check (is it a zip?)
             // Note: finfo might rely on magic bytes. 404 HTML will definitely fail this now.
             $finfo = new \finfo(FILEINFO_MIME_TYPE);
             if ($finfo->file($tempPath) !== 'application/zip' && $finfo->file($tempPath) !== 'application/x-zip-compressed') {
-                 // Some servers might send wrong mime, so maybe skip this or just warn
+                // Some servers might send wrong mime, so maybe skip this or just warn
             }
-            
+
             return $tempPath;
         } catch (\Exception $e) {
             Log::error("Download failed: " . $e->getMessage());
@@ -253,26 +275,26 @@ class UpdateService
     {
         $zip = new ZipArchive;
         $res = $zip->open($zipPath);
-        
+
         if ($res === TRUE) {
             try {
                 // Extract to base path (overwrite)
                 if ($zip->extractTo(base_path())) {
-                     $zip->close();
-                     return true;
+                    $zip->close();
+                    return true;
                 } else {
                     Log::error("ZipArchive::extractTo() failed. Check permissions for: " . base_path());
                     $zip->close();
                     return false;
                 }
             } catch (\Exception $e) {
-                 Log::error("Zip extraction exception: " . $e->getMessage());
-                 $zip->close();
-                 return false;
+                Log::error("Zip extraction exception: " . $e->getMessage());
+                $zip->close();
+                return false;
             }
         } else {
             // Map error code to string
-            $errorMsg = match($res) {
+            $errorMsg = match ($res) {
                 \ZipArchive::ER_EXISTS => 'File already exists',
                 \ZipArchive::ER_INCONS => 'Zip archive inconsistent',
                 \ZipArchive::ER_INVAL => 'Invalid argument',

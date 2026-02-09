@@ -29,7 +29,7 @@
                             <form action="{{ route('admin.settings.updates.perform') }}" method="POST">
                                 @csrf
                                 <p class="text-muted mb-3">
-                                    <small><i class="bi bi-exclamation-triangle"></i> This will backup the database and perform a system update.</small>
+                                    <small><i class="bi bi-exclamation-triangle"></i> This will backup the database, update the system, and automatically run maintenance tasks (migrations, storage check, cache clear).</small>
                                 </p>
                                 <button type="submit" class="btn btn-success btn-lg">
                                     <i class="bi bi-cloud-arrow-down me-2"></i> Update Now

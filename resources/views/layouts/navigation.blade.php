@@ -18,11 +18,27 @@
                     <x-nav-link :href="route('payments.index')" :active="request()->routeIs('payments.*')">
                         {{ __('Payments') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('bank-accounts.index')" :active="request()->routeIs('bank-accounts.*')">
+                        {{ __('Banking') }}
+                    </x-nav-link>
                     
                     <div class="hidden sm:flex sm:items-center sm:ms-6">
                         <x-dropdown align="top" width="48">
                             <x-slot name="trigger">
-                                <button class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 text-gray-500 hover:text-gray-700 hover:border-gray-300 focus:outline-none focus:text-gray-700 focus:border-gray-300 transition duration-150 ease-in-out">
+                                @php
+                                    $transportRoutes = [
+                                        'admin.drivers.*', 
+                                        'admin.trips.*', 
+                                        'admin.transport.reports.*', 
+                                        'admin.driver-payments.*', 
+                                        'admin.driver-salaries.*'
+                                    ];
+                                    $isActive = request()->routeIs(...$transportRoutes);
+                                    $classes = $isActive
+                                                ? 'inline-flex items-center px-1 pt-1 border-b-2 border-indigo-400 text-sm font-medium leading-5 text-gray-900 focus:outline-none focus:border-indigo-700 transition duration-150 ease-in-out'
+                                                : 'inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 text-gray-500 hover:text-gray-700 hover:border-gray-300 focus:outline-none focus:text-gray-700 focus:border-gray-300 transition duration-150 ease-in-out';
+                                @endphp
+                                <button class="{{ $classes }}">
                                     <div>Transportation</div>
                                     <div class="ms-1">
                                         <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
@@ -32,9 +48,9 @@
                                 </button>
                             </x-slot>
                             <x-slot name="content">
-                                <x-dropdown-link :href="route('admin.drivers.index')">Drivers</x-dropdown-link>
-                                <x-dropdown-link :href="route('admin.trips.index')">All Trips</x-dropdown-link>
-                                <x-dropdown-link :href="route('admin.transport.reports.index')">Reports</x-dropdown-link>
+                                <x-dropdown-link :href="route('admin.drivers.index')" :active="request()->routeIs('admin.drivers.*')">Drivers</x-dropdown-link>
+                                <x-dropdown-link :href="route('admin.trips.index')" :active="request()->routeIs('admin.trips.*')">All Trips</x-dropdown-link>
+                                <x-dropdown-link :href="route('admin.transport.reports.index')" :active="request()->routeIs('admin.transport.reports.*')">Reports</x-dropdown-link>
                             </x-slot>
                         </x-dropdown>
                     </div>
@@ -95,6 +111,9 @@
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('payments.index')" :active="request()->routeIs('payments.*')">
                 {{ __('Payments') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('bank-accounts.index')" :active="request()->routeIs('bank-accounts.*')">
+                {{ __('Banking') }}
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('admin.drivers.index')" :active="request()->routeIs('admin.drivers.*')">
                 {{ __('Drivers') }}

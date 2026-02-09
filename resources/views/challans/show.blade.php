@@ -64,15 +64,15 @@
                             <td>{{ $item->description }}</td>
                             <td class="text-end">{{ number_format($item->quantity, 3) }}</td>
                             <td>{{ $item->unit }}</td>
-                            <td class="text-end">₹{{ number_format($item->rate, 2) }}</td>
-                            <td class="text-end">₹{{ number_format($item->amount, 2) }}</td>
+                            <td class="text-end">₹{{ formatIndianCurrency($item->rate) }}</td>
+                            <td class="text-end">₹{{ formatIndianCurrency($item->amount) }}</td>
                         </tr>
                         @endforeach
                     </tbody>
                     <tfoot>
                         <tr class="table-light">
                             <td colspan="5" class="text-end"><strong>Subtotal:</strong></td>
-                            <td class="text-end"><strong class="fs-5">₹{{ number_format($challan->subtotal, 2) }}</strong></td>
+                            <td class="text-end"><strong class="fs-5">₹{{ formatIndianCurrency($challan->subtotal) }}</strong></td>
                         </tr>
                     </tfoot>
                 </table>

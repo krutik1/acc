@@ -20,7 +20,7 @@ class ChallanRequest extends FormRequest
     public function rules(): array
     {
         $challanId = $this->route('challan') ? $this->route('challan')->id : null;
-        
+
         return [
             'party_id' => ['required', 'exists:parties,id'],
             'challan_number' => [
@@ -70,7 +70,7 @@ class ChallanRequest extends FormRequest
             $items = collect($this->items)->filter(function ($item) {
                 return !empty($item['description']) || !empty($item['quantity']) || !empty($item['rate']);
             })->values()->all();
-            
+
             $this->merge(['items' => $items]);
         }
     }

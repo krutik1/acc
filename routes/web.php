@@ -69,7 +69,7 @@ Route::middleware(['auth', 'role:driver'])->prefix('driver')->name('driver.')->g
     Route::get('/reports', [\App\Http\Controllers\DriverReportController::class, 'index'])->name('reports.index');
     Route::get('/payments', [DriverPaymentController::class, 'index'])->name('payments.index');
     Route::get('/monthly-payments', [\App\Http\Controllers\DriverSalaryController::class, 'index'])->name('salaries.index');
-    
+
     // Read-only access for blocked drivers (Index/Show)
     Route::get('trips', [\App\Http\Controllers\TripController::class, 'index'])->name('trips.index');
     // Write access protected by blocked check
@@ -143,6 +143,30 @@ Route::middleware(['auth', 'company', 'role:admin'])->group(function () {
     // Suggestions Route
     Route::get('/api/suggestions', [SuggestionController::class, 'search'])->name('api.suggestions');
 
+    // Item Master Routes
+    Route::resource('items', \App\Http\Controllers\ItemController::class);
+    Route::get('/api/items/search', [\App\Http\Controllers\ItemController::class, 'search'])->name('api.items.search');
+
+    // Bank Statement Routes
+    Route::resource('bank-accounts', \App\Http\Controllers\BankAccountController::class);
+    Route::post('bank-accounts/{bankAccount}/transactions', [\App\Http\Controllers\BankTransactionController::class, 'store'])->name('bank-transactions.store');
+    Route::put('bank-transactions/{bankTransaction}', [\App\Http\Controllers\BankTransactionController::class, 'update'])->name('bank-transactions.update');
+    Route::delete('bank-transactions/{bankTransaction}', [\App\Http\Controllers\BankTransactionController::class, 'destroy'])->name('bank-transactions.destroy');
+
+    // Expenses Tracker Routes
+    Route::resource('units', \App\Http\Controllers\UnitController::class);
+    Route::resource('expense-categories', \App\Http\Controllers\ExpenseCategoryController::class);
+    Route::resource('expenses', \App\Http\Controllers\ExpenseController::class);
+
+    // Expense Reports
+    Route::prefix('expenses/reports')->name('expenses.reports.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\ExpenseReportController::class, 'index'])->name('index');
+        Route::get('/monthly', [\App\Http\Controllers\ExpenseReportController::class, 'monthly'])->name('monthly');
+        Route::get('/unit-wise', [\App\Http\Controllers\ExpenseReportController::class, 'unitWise'])->name('unit-wise');
+        Route::get('/category-wise', [\App\Http\Controllers\ExpenseReportController::class, 'categoryWise'])->name('category-wise');
+        Route::get('/export', [\App\Http\Controllers\ExpenseReportController::class, 'export'])->name('export');
+    });
+
     // Admin Transportation Routes
     Route::prefix('admin')->name('admin.')->group(function () {
         // System Updates
@@ -151,7 +175,7 @@ Route::middleware(['auth', 'company', 'role:admin'])->group(function () {
 
         // Employees
         Route::resource('employees', \App\Http\Controllers\EmployeeController::class);
-        
+
         // Upaads
         Route::resource('upaads', \App\Http\Controllers\UpaadController::class);
 
@@ -162,16 +186,16 @@ Route::middleware(['auth', 'company', 'role:admin'])->group(function () {
 
         Route::resource('drivers', \App\Http\Controllers\AdminDriverController::class);
         Route::patch('drivers/{driver}/toggle-block', [\App\Http\Controllers\AdminDriverController::class, 'toggleBlock'])->name('drivers.toggle-block');
-        
+
         Route::resource('trips', \App\Http\Controllers\AdminTripController::class);
         Route::patch('trips/{trip}/status', [\App\Http\Controllers\AdminTripController::class, 'updateStatus'])->name('trips.status');
 
         // Transportation Reports
         Route::get('transport/reports', [\App\Http\Controllers\Admin\TransportReportController::class, 'index'])->name('transport.reports.index');
-        
+
         // Driver Payments
         Route::resource('driver-payments', AdminDriverPaymentController::class);
-        
+
         // Driver Monthly Salaries
         Route::post('driver-salaries/calculate', [\App\Http\Controllers\AdminDriverSalaryController::class, 'calculate'])->name('driver-salaries.calculate');
         Route::post('driver-salaries/{salary}/mark-paid', [\App\Http\Controllers\AdminDriverSalaryController::class, 'markPaid'])->name('driver-salaries.markPaid');
@@ -179,4 +203,4 @@ Route::middleware(['auth', 'company', 'role:admin'])->group(function () {
     });
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

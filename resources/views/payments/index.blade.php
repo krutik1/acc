@@ -97,7 +97,7 @@
                         @endif
                     </td>
                     <td><span class="text-muted small text-uppercase">{{ str_replace('_', ' ', $payment->mode) }}</span></td>
-                    <td class="text-end fw-bold">₹{{ number_format($payment->amount, 2) }}</td>
+                    <td class="text-end fw-bold">₹{{ formatIndianCurrency($payment->amount) }}</td>
                     <td class="text-end">
                         <a href="{{ route('payments.show', $payment) }}" class="action-btn bg-warning me-1" title="View">
                             <i class="bi bi-eye-fill text-white" style="font-size: 0.8rem;"></i>

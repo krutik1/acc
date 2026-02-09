@@ -16,6 +16,7 @@ class ChallanItem extends Model
     protected $fillable = [
         'challan_id',
         'description',
+        'hsn_code',
         'quantity',
         'unit',
         'rate',

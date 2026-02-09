@@ -65,7 +65,7 @@
                             </td>
                             <td>{{ $challan->challan_date->format('d/m/Y') }}</td>
                             <td>{{ $challan->items->count() }} items</td>
-                            <td class="text-end">₹{{ number_format($challan->subtotal, 2) }}</td>
+                            <td class="text-end">₹{{ formatIndianCurrency($challan->subtotal) }}</td>
                         </tr>
                         @endforeach
                     </tbody>
@@ -82,6 +82,7 @@
                         <tr>
                             <th>#</th>
                             <th>Description</th>
+                            <th class="text-center">HSN/SAC</th>
                             <th class="text-end">Qty</th>
                             <th>Unit</th>
                             <th class="text-end">Rate</th>
@@ -95,10 +96,11 @@
                             <tr>
                                 <td>{{ $itemNum++ }}</td>
                                 <td>{{ $item->description }}</td>
+                                <td class="text-center">{{ $item->hsn_code ?? '-' }}</td>
                                 <td class="text-end">{{ number_format($item->quantity, 3) }}</td>
                                 <td>{{ $item->unit }}</td>
-                                <td class="text-end">₹{{ number_format($item->rate, 2) }}</td>
-                                <td class="text-end">₹{{ number_format($item->amount, 2) }}</td>
+                                <td class="text-end">₹{{ formatIndianCurrency($item->rate) }}</td>
+                                <td class="text-end">₹{{ formatIndianCurrency($item->amount) }}</td>
                             </tr>
                             @endforeach
                         @endforeach
@@ -129,18 +131,18 @@
                 <table class="table table-borderless mb-0">
                     <tr>
                         <td>Subtotal:</td>
-                        <td class="text-end">₹{{ number_format($invoice->subtotal, 2) }}</td>
+                        <td class="text-end">₹{{ formatIndianCurrency($invoice->subtotal) }}</td>
                     </tr>
                     @if($invoice->gst_amount > 0)
                     <tr>
                         <td>GST ({{ $invoice->gst_percent }}%):</td>
-                        <td class="text-end text-success">+ ₹{{ number_format($invoice->gst_amount, 2) }}</td>
+                        <td class="text-end text-success">+ ₹{{ formatIndianCurrency($invoice->gst_amount) }}</td>
                     </tr>
                     @endif
                     @if($invoice->tds_amount > 0)
                     <tr>
                         <td>TDS ({{ $invoice->tds_percent }}%):</td>
-                        <td class="text-end text-danger">- ₹{{ number_format($invoice->tds_amount, 2) }}</td>
+                        <td class="text-end text-danger">- ₹{{ formatIndianCurrency($invoice->tds_amount) }}</td>
                     </tr>
                     @endif
                     @if($invoice->discount_amount > 0)
@@ -151,12 +153,12 @@
                             @endif
                             :
                         </td>
-                        <td class="text-end text-danger">- ₹{{ number_format($invoice->discount_amount, 2) }}</td>
+                        <td class="text-end text-danger">- ₹{{ formatIndianCurrency($invoice->discount_amount) }}</td>
                     </tr>
                     @endif
                     <tr class="table-light">
                         <td class="fw-bold fs-5">Final Amount:</td>
-                        <td class="text-end highlight-amount">₹{{ number_format($invoice->final_amount, 2) }}</td>
+                        <td class="text-end highlight-amount">₹{{ formatIndianCurrency($invoice->final_amount) }}</td>
                     </tr>
                 </table>
             </div>

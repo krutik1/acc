@@ -108,7 +108,7 @@
         </div>
 
         <div class="amount-box">
-            Amount: ₹ {{ number_format($payment->amount, 2) }}
+            Amount: ₹ {{ formatIndianCurrency($payment->amount) }}
         </div>
 
         <table class="info-table">
