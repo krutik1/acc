@@ -22,10 +22,16 @@ class ExpenseReportController extends Controller
     {
         $year = $request->input('year', now()->year);
         $companyId = session('selected_company_id');
+        $unitId = $request->input('unit_id');
 
-        $monthlyExpenses = Expense::whereHas('unit', function ($q) use ($companyId) {
+        $units = Unit::where('company_id', $companyId)->get();
+
+        $monthlyExpenses = Expense::whereHas('unit', function ($q) use ($companyId, $unitId) {
             if ($companyId) {
                 $q->where('company_id', $companyId);
+            }
+            if ($unitId) {
+                $q->where('id', $unitId);
             }
         })
             ->whereYear('date', $year)
@@ -74,7 +80,7 @@ class ExpenseReportController extends Controller
             $years = [now()->year];
         }
 
-        return view('expenses.reports.monthly', compact('chartData', 'totalExpensesYear', 'year', 'years'));
+        return view('expenses.reports.monthly', compact('chartData', 'totalExpensesYear', 'year', 'years', 'units', 'unitId'));
     }
 
     public function unitWise(Request $request)

@@ -21,6 +21,15 @@
                     @endforeach
                 </select>
             </div>
+            <div class="col-md-3">
+                <label for="unit_id" class="form-label fw-bold small text-muted">Select Unit</label>
+                <select class="form-select" id="unit_id" name="unit_id" onchange="this.form.submit()">
+                    <option value="">All Units</option>
+                    @foreach($units as $unit)
+                        <option value="{{ $unit->id }}" {{ $unitId == $unit->id ? 'selected' : '' }}>{{ $unit->name }}</option>
+                    @endforeach
+                </select>
+            </div>
         </form>
     </div>
 </div>
