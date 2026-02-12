@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 use ZipArchive;
 
 class UpdateService
@@ -86,7 +87,7 @@ class UpdateService
     protected function performUpdate($version, $url)
     {
         // Register shutdown function to ensure app comes back up if script dies
-        register_shutdown_function(function () {
+        \register_shutdown_function(function () {
             // Check if we are incorrectly in maintenance mode
             if (app()->isDownForMaintenance()) { // Laravel check, though 'app()' helper might not work in shutdown?
                 // Safer: just call up. It's idempotent-ish (clears file)
@@ -100,7 +101,7 @@ class UpdateService
 
         try {
             // INCREASE TIMEOUT
-            set_time_limit(600);
+            \set_time_limit(600);
 
             // 1. Backup Database
             $backupResult = $this->backupDatabase();
@@ -183,15 +184,17 @@ class UpdateService
                 File::makeDirectory(storage_path('app/backups'), 0755, true);
             }
 
+            // Check if exec is available
+            if (!function_exists('exec')) {
+                Log::warning("exec() function is disabled. Using PHP fallback for database backup.");
+                return $this->backupDatabaseUsingPhp($path);
+            }
+
             $dbHost = config('database.connections.mysql.host');
             $dbName = config('database.connections.mysql.database');
             $dbUser = config('database.connections.mysql.username');
             $dbPass = config('database.connections.mysql.password');
 
-            // Password handling
-            // Note: On Windows PowerShell, passing empty password might need care, 
-            // but usually no -p flag is best if empty.
-            // If password exists, use -p"password" (no space, quoted)
             $passwordPart = $dbPass ? "-p\"$dbPass\"" : "";
 
             // Find mysqldump
@@ -200,46 +203,114 @@ class UpdateService
             // Attempt to find specific Laragon path on C: or E:
             $laragonDrives = ['c:', 'e:'];
             foreach ($laragonDrives as $drive) {
-                // Look for any mysql version in laragon
                 $candidates = glob($drive . '/laragon/bin/mysql/*/bin/mysqldump.exe');
                 if (!empty($candidates)) {
-                    $mysqldump = '"' . $candidates[0] . '"'; // Use first found, quote it
+                    $mysqldump = '"' . $candidates[0] . '"';
                     break;
                 }
             }
 
-            // Construct command
-            // Note: Putting password in command line can be insecure (visible in process list), 
-            // but acceptable for this local/controlled environment context.
-            // Better approach: use .cnf file, but keeping it simple as per request.
             $command = "$mysqldump -h $dbHost -u $dbUser $passwordPart $dbName > \"$path\"";
 
-            // Log for debugging (exclude password if possible, but here we debug)
             Log::info("Running backup command: " . str_replace($dbPass, '****', $command));
-
-            // Execute using Symfony Process for better capture
-            // We use shell_exec/exec style via Process::fromShellCommandline because of the redirection > 
-            // Laravel Process facade 'run' might not handle > redirection easily without 'fromShellCommandline' behavior 
-            // or we handle stdout capture ourselves.
-            // Let's use standard exec just to be safe with the redirection operator > on Windows.
-            // But we need stderr.
 
             $output = [];
             $resultCode = 0;
-            // 2>&1 to capture stderr in output
-            exec("$command 2>&1", $output, $resultCode);
+            \exec("$command 2>&1", $output, $resultCode);
 
             if ($resultCode === 0 && File::exists($path) && File::size($path) > 0) {
                 return ['success' => true, 'path' => $path];
             } else {
                 $errorMsg = implode("\n", $output);
                 Log::error("Backup failed. Code: $resultCode. Output: $errorMsg");
-                return ['success' => false, 'message' => "mysqldump failed (Code $resultCode): $errorMsg"];
+                Log::info("Falling back to PHP backup method.");
+                return $this->backupDatabaseUsingPhp($path);
             }
 
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error("Backup exception: " . $e->getMessage());
-            return ['success' => false, 'message' => $e->getMessage()];
+            // Last resort fallback if exception occurred (e.g. exec disabled but not caught by function_exists check?)
+            try {
+                return $this->backupDatabaseUsingPhp($path);
+            } catch (\Exception $ex) {
+                return ['success' => false, 'message' => $e->getMessage() . " | Fallback failed: " . $ex->getMessage()];
+            }
+        }
+    }
+
+    protected function backupDatabaseUsingPhp($path)
+    {
+        try {
+            $handle = fopen($path, 'w');
+            if (!$handle) {
+                return ['success' => false, 'message' => "Could not create backup file at $path"];
+            }
+
+            fwrite($handle, "-- Backup created by PHP Fallback at " . date('Y-m-d H:i:s') . "\n");
+            fwrite($handle, "SET FOREIGN_KEY_CHECKS=0;\n");
+            fwrite($handle, "SET SQL_MODE = \"NO_AUTO_VALUE_ON_ZERO\";\n\n");
+
+            $tables = DB::select('SHOW TABLES');
+            $dbName = config('database.connections.mysql.database');
+            $tablesKey = "Tables_in_" . $dbName;
+
+            foreach ($tables as $tableUrl) {
+                // Handle object property dynamically
+                $table = null;
+                foreach ($tableUrl as $key => $value) {
+                    $table = $value;
+                    break;
+                }
+
+                if (!$table)
+                    continue;
+
+                // Structure
+                fwrite($handle, "-- Table structure for `$table`\n");
+                fwrite($handle, "DROP TABLE IF EXISTS `$table`;\n");
+
+                $createTable = DB::select("SHOW CREATE TABLE `$table`");
+                if (!empty($createTable)) {
+                    $createTableSql = $createTable[0]->{'Create Table'} ?? $createTable[0]->{'rubbish'};
+                    // property is usually 'Create Table'
+                    fwrite($handle, $createTableSql . ";\n\n");
+                }
+
+                // Data
+                fwrite($handle, "-- Dumping data for `$table`\n");
+                // Use cursor to stream results to avoid memory limits
+                foreach (DB::table($table)->cursor() as $row) {
+                    $values = [];
+                    foreach ((array) $row as $value) {
+                        if (is_null($value)) {
+                            $values[] = "NULL";
+                        } elseif (is_numeric($value)) {
+                            $values[] = $value;
+                        } else {
+                            $values[] = "'" . addslashes($value) . "'";
+                        }
+                    }
+                    $sql = "INSERT INTO `$table` VALUES (" . implode(', ', $values) . ");\n";
+                    fwrite($handle, $sql);
+                }
+                fwrite($handle, "\n");
+            }
+
+            fwrite($handle, "SET FOREIGN_KEY_CHECKS=1;\n");
+            fclose($handle);
+
+            if (File::exists($path) && File::size($path) > 0) {
+                return ['success' => true, 'path' => $path];
+            }
+
+            return ['success' => false, 'message' => "PHP Backup produced empty file or failed."];
+
+        } catch (\Exception $e) {
+            Log::error("PHP Backup failed: " . $e->getMessage());
+            if (isset($handle) && is_resource($handle)) {
+                fclose($handle);
+            }
+            return ['success' => false, 'message' => "PHP Backup failed: " . $e->getMessage()];
         }
     }
 
