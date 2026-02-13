@@ -134,34 +134,27 @@ class Invoice extends Model
      */
     public static function generateInvoiceNumber(?int $companyId = null): string
     {
-        // Use Current Calendar Year as per user requirement
-        $year = date('Y');
-        $prefix = "INV{$year}";
-
-        // Search by prefix instead of date range to ensure uniqueness
-        $query = static::where('invoice_number', 'like', "{$prefix}%");
+        $query = static::query();
 
         if ($companyId) {
             $query->where('company_id', $companyId);
         }
 
-        // Get the latest invoice with this prefix
-        // We order by length first to handle variable lengths correctly (e.g. 10 vs 100), then by value
-        $lastInvoice = $query->orderByRaw('LENGTH(invoice_number) DESC')
+        // Exclude old invoice numbers that start with "INV"
+        // Find the latest invoice number that does NOT start with INV
+        $lastInvoice = $query->where('invoice_number', 'NOT LIKE', 'INV%')
+            ->orderByRaw('LENGTH(invoice_number) DESC')
             ->orderBy('invoice_number', 'desc')
             ->first();
 
-        if ($lastInvoice) {
-            // Extract the numeric part after the prefix
-            // Prefix length = 3 (INV) + 4 (Year) = 7
-            $sequence = (int) substr($lastInvoice->invoice_number, 7);
+        if ($lastInvoice && is_numeric($lastInvoice->invoice_number)) {
+            $sequence = (int) $lastInvoice->invoice_number;
             $newSequence = $sequence + 1;
         } else {
             $newSequence = 1;
         }
 
-        // Pad to at least 3 digits (e.g. 001, 002, 010, 100)
-        return $prefix . str_pad($newSequence, 3, '0', STR_PAD_LEFT);
+        return str_pad((string) $newSequence, 3, '0', STR_PAD_LEFT);
     }
 
     /**
