@@ -9,6 +9,12 @@
         <a href="{{ route('invoices.edit', $invoice) }}" class="btn btn-primary me-2">
             <i class="bi bi-pencil me-1"></i>Edit
         </a>
+        <a href="{{ route('invoices.share.email', $invoice) }}" class="btn btn-secondary me-2">
+            <i class="bi bi-envelope-fill me-1"></i>Email
+        </a>
+        <a href="{{ route('invoices.share.whatsapp', $invoice) }}" class="btn btn-success me-2" target="_blank">
+            <i class="bi bi-whatsapp me-1"></i>WhatsApp
+        </a>
         <a href="{{ route('invoices.pdf', $invoice) }}" class="btn btn-danger me-2">
             <i class="bi bi-file-pdf me-1"></i>Download PDF
         </a>

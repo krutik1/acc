@@ -22,6 +22,7 @@ class Challan extends Model
         'challan_date',
         'subtotal',
         'is_invoiced',
+        'financial_year',
     ];
 
     /**
@@ -63,7 +64,7 @@ class Challan extends Model
     public function invoices(): BelongsToMany
     {
         return $this->belongsToMany(Invoice::class, 'invoice_challans')
-                    ->withTimestamps();
+            ->withTimestamps();
     }
 
     /**
@@ -84,13 +85,13 @@ class Challan extends Model
         $prefix = 'CH';
         $year = date('Y');
         $query = static::whereYear('created_at', $year);
-        
+
         if ($companyId) {
             $query->where('company_id', $companyId);
         }
-        
+
         $lastChallan = $query->orderBy('id', 'desc')->first();
-        
+
         if ($lastChallan) {
             // Extract the number from the last challan
             $lastNumber = (int) substr($lastChallan->challan_number, -6);
@@ -98,7 +99,7 @@ class Challan extends Model
         } else {
             $newNumber = 1;
         }
-        
+
         return $prefix . $year . str_pad($newNumber, 6, '0', STR_PAD_LEFT);
     }
 }

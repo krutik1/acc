@@ -48,6 +48,11 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
+// Public Signed Routes
+Route::get('/invoices/public/{invoice}/download', [\App\Http\Controllers\InvoiceShareController::class, 'downloadPublic'])
+    ->name('invoices.public.download')
+    ->middleware('signed');
+
 Route::middleware('auth')->group(function () {
     // Company Selection Routes (before company middleware)
     Route::get('/companies/select', [CompanySelectionController::class, 'select'])->name('companies.select');
@@ -127,6 +132,18 @@ Route::middleware(['auth', 'company', 'role:admin'])->group(function () {
     Route::post('/api/invoices/calculate', [InvoiceController::class, 'calculate'])
         ->name('api.invoices.calculate');
 
+    // Invoice Sharing
+    Route::get('/invoices/{invoice}/share/email', [\App\Http\Controllers\InvoiceShareController::class, 'emailForm'])->name('invoices.share.email');
+    Route::post('/invoices/{invoice}/share/email', [\App\Http\Controllers\InvoiceShareController::class, 'sendEmail'])->name('invoices.share.email.send');
+    Route::get('/invoices/{invoice}/share/whatsapp', [\App\Http\Controllers\InvoiceShareController::class, 'shareViaWhatsApp'])->name('invoices.share.whatsapp');
+
+    // Public Download Route (Signed) - Outside of auth/company middleware group?
+    // Actually, user wants it public, so it should be outside the auth middleware group. 
+    // But for now let's keep it here and see if I need to move it. 
+    // Wait, the requirement is "Generate secure public invoice PDF URL". 
+    // "Public" means NO AUTH. So I must move it outside the 'auth' middleware group.
+
+
     // Payment Routes
     Route::resource('payments', PaymentController::class);
     Route::get('/payments/{payment}/print', [PaymentController::class, 'print'])
@@ -172,6 +189,10 @@ Route::middleware(['auth', 'company', 'role:admin'])->group(function () {
         // System Updates
         Route::get('/settings/updates', [\App\Http\Controllers\UpdateController::class, 'index'])->name('settings.updates');
         Route::post('/settings/updates', [\App\Http\Controllers\UpdateController::class, 'update'])->name('settings.updates.perform');
+
+        // Email Settings
+        Route::get('/settings/email', [\App\Http\Controllers\Admin\SettingsController::class, 'email'])->name('settings.email');
+        Route::post('/settings/email', [\App\Http\Controllers\Admin\SettingsController::class, 'updateEmail'])->name('settings.email.update');
 
         // Employees
         Route::resource('employees', \App\Http\Controllers\EmployeeController::class);

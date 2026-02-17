@@ -64,7 +64,7 @@ class InvoiceController extends Controller
             $q->where('company_id', $companyId)
                 ->orWhereNull('company_id');
         })->orderBy('name')->get();
-        $invoiceNumber = Invoice::generateInvoiceNumber($companyId);
+        $invoiceNumber = Invoice::generateInvoiceNumber($companyId, Invoice::getFinancialYear());
 
         return view('invoices.create', compact('parties', 'invoiceNumber'));
     }
@@ -202,12 +202,16 @@ class InvoiceController extends Controller
                 $request->discount_value ?? 0
             );
 
+            // Calculate financial year based on invoice_date
+            $financialYear = Invoice::getFinancialYear($request->invoice_date);
+
             // Create invoice
             $invoice = Invoice::create([
                 'company_id' => $companyId,
                 'party_id' => $request->party_id,
-                'invoice_number' => Invoice::generateInvoiceNumber($companyId),
+                'invoice_number' => Invoice::generateInvoiceNumber($companyId, $financialYear),
                 'invoice_date' => $request->invoice_date,
+                'financial_year' => $financialYear,
                 'subtotal' => $amounts['subtotal'],
                 'gst_percent' => $request->gst_percent ?? 0,
                 'gst_amount' => $amounts['gst_amount'],

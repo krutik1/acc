@@ -12,7 +12,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (query.length < 2) {
             suggestionsBox.style.display = 'none';
+            if (hiddenInput.value) {
+                hiddenInput.value = '';
+                hiddenInput.dispatchEvent(new Event('change'));
+                if (window.triggerChallanDuplicateCheck) window.triggerChallanDuplicateCheck();
+            }
             return;
+        }
+
+        // Also clear if user is typing (to avoid stale ID)
+        if (hiddenInput.value) {
+             // Check if current value matches what we have? 
+             // Actually, safer to clear it. If they type, they must re-select.
+             hiddenInput.value = '';
+             hiddenInput.dispatchEvent(new Event('change'));
+             if (window.triggerChallanDuplicateCheck) window.triggerChallanDuplicateCheck();
         }
 
         debounceTimer = setTimeout(() => {
@@ -32,7 +46,12 @@ document.addEventListener('DOMContentLoaded', function() {
                                 hiddenInput.value = party.id;
                                 suggestionsBox.style.display = 'none';
                                 
-                                // Trigger any change events if needed (e.g. for fetching specific party details)
+                                // Trigger global duplicate check if available
+                                if (window.triggerChallanDuplicateCheck) {
+                                    window.triggerChallanDuplicateCheck();
+                                }
+                                
+                                // Trigger any change events if needed
                                 hiddenInput.dispatchEvent(new Event('change'));
                             });
                             suggestionsBox.appendChild(item);

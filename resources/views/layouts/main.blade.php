@@ -369,6 +369,15 @@
                             <li><a class="dropdown-item {{ request()->routeIs('reports.employee-statement') ? 'active' : '' }}" href="{{ route('reports.employee-statement') }}">Employee Statement</a></li>
                         </ul>
                     </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle text-dark {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-gear me-2"></i>System
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item {{ request()->routeIs('admin.settings.email') ? 'active' : '' }}" href="{{ route('admin.settings.email') }}">Email Settings</a></li>
+                            <li><a class="dropdown-item {{ request()->routeIs('admin.settings.updates') ? 'active' : '' }}" href="{{ route('admin.settings.updates') }}">System Update</a></li>
+                        </ul>
+                    </li>
                     <li><hr class="dropdown-divider text-white border-secondary"></li>
                     @endif
                 </ul>
@@ -569,15 +578,26 @@
                                     </li>
                                 </ul>
                             </div>
+                        </li>
 
-                        </li>
-                        <li class="nav-item mt-3">
-                            <h6 class="ps-4 ms-2 text-uppercase text-xs font-weight-bolder opacity-6">System</h6>
-                        </li>
                         <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('admin.settings.updates') ? 'active' : '' }}" href="{{ route('admin.settings.updates') }}">
-                                <i class="bi bi-gear me-2"></i>System Update
+                            <a class="nav-link {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}" href="#systemSubmenu" data-bs-toggle="collapse" aria-expanded="{{ request()->routeIs('admin.settings.*') ? 'true' : 'false' }}">
+                                <i class="bi bi-gear me-2"></i>System <i class="bi bi-chevron-down ms-auto" style="font-size: 0.8em;"></i>
                             </a>
+                            <div class="collapse {{ request()->routeIs('admin.settings.*') ? 'show' : '' }}" id="systemSubmenu">
+                                <ul class="nav flex-column ps-3">
+                                    <li class="nav-item">
+                                        <a class="nav-link {{ request()->routeIs('admin.settings.email') ? 'active' : '' }}" href="{{ route('admin.settings.email') }}" style="padding-top: 8px; padding-bottom: 8px;">
+                                            Email Settings
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link {{ request()->routeIs('admin.settings.updates') ? 'active' : '' }}" href="{{ route('admin.settings.updates') }}" style="padding-top: 8px; padding-bottom: 8px;">
+                                            System Update
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
                         </li>
                     @endif
                 </nav>

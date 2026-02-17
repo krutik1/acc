@@ -79,6 +79,12 @@
                         <a href="{{ route('invoices.edit', $invoice) }}" class="action-btn bg-info me-1" title="Edit">
                             <i class="bi bi-pencil-fill text-white" style="font-size: 0.8rem;"></i>
                         </a>
+                        <a href="{{ route('invoices.share.email', $invoice) }}" class="action-btn bg-secondary me-1" title="Send via Email">
+                            <i class="bi bi-envelope-fill text-white" style="font-size: 0.8rem;"></i>
+                        </a>
+                        <a href="{{ route('invoices.share.whatsapp', $invoice) }}" class="action-btn bg-success me-1" title="Send via WhatsApp" target="_blank">
+                            <i class="bi bi-whatsapp text-white" style="font-size: 0.8rem;"></i>
+                        </a>
                         <a href="{{ route('invoices.pdf', $invoice) }}" class="action-btn bg-danger me-1" title="Download PDF">
                             <i class="bi bi-file-pdf-fill text-white" style="font-size: 0.8rem;"></i>
                         </a>

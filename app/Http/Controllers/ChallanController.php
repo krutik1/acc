@@ -83,12 +83,16 @@ class ChallanController extends Controller
                 ? $request->challan_number
                 : Challan::generateChallanNumber();
 
+            // Calculate financial year
+            $financialYear = \App\Models\Invoice::getFinancialYear($request->challan_date);
+
             // Create challan
             $challan = Challan::create([
                 'company_id' => $this->getCompanyId(),
                 'party_id' => $request->party_id,
                 'challan_number' => $challanNumber,
                 'challan_date' => $request->challan_date,
+                'financial_year' => $financialYear,
                 'subtotal' => 0,
                 'is_invoiced' => false,
             ]);
@@ -126,7 +130,7 @@ class ChallanController extends Controller
             DB::rollBack();
             return back()
                 ->withInput()
-                ->with('error', 'Failed to create challan. Please try again.');
+                ->with('error', 'Failed to create challan. Please try again. ' . $e->getMessage());
         }
     }
 
@@ -177,11 +181,15 @@ class ChallanController extends Controller
                 ? $request->challan_number
                 : $challan->challan_number;
 
+            // Calculate financial year
+            $financialYear = \App\Models\Invoice::getFinancialYear($request->challan_date);
+
             // Update challan details
             $challan->update([
                 'party_id' => $request->party_id,
                 'challan_number' => $challanNumber,
                 'challan_date' => $request->challan_date,
+                'financial_year' => $financialYear,
             ]);
 
             // Delete existing items
@@ -334,11 +342,17 @@ class ChallanController extends Controller
     {
         $request->validate([
             'challan_number' => ['required', 'string'],
+            'party_id' => ['required', 'exists:parties,id'],
+            'challan_date' => ['required', 'date'],
             'challan_id' => ['nullable', 'exists:challans,id'],
         ]);
 
+        $financialYear = \App\Models\Invoice::getFinancialYear($request->challan_date);
+
         $query = Challan::where('challan_number', $request->challan_number)
-            ->where('company_id', $this->getCompanyId());
+            ->where('company_id', $this->getCompanyId())
+            ->where('party_id', $request->party_id)
+            ->where('financial_year', $financialYear);
 
         // Exclude current challan if editing
         if ($request->challan_id) {
@@ -349,7 +363,7 @@ class ChallanController extends Controller
 
         return response()->json([
             'exists' => $exists,
-            'message' => $exists ? 'This challan number already exists.' : '',
+            'message' => $exists ? 'This challan number already exists for this party in the selected financial year.' : '',
         ]);
     }
 

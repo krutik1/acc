@@ -29,6 +29,7 @@ class Invoice extends Model
         'discount_amount',
         'final_amount',
         'notes',
+        'financial_year',
     ];
 
     /**
@@ -132,13 +133,18 @@ class Invoice extends Model
      * Generate a unique invoice number based on Financial Year.
      * Format: INV<FY_START_YEAR>001
      */
-    public static function generateInvoiceNumber(?int $companyId = null): string
+    public static function generateInvoiceNumber(?int $companyId = null, ?string $financialYear = null): string
     {
         $query = static::query();
 
         if ($companyId) {
             $query->where('company_id', $companyId);
         }
+
+        if (!$financialYear) {
+            $financialYear = self::getFinancialYear();
+        }
+        $query->where('financial_year', $financialYear);
 
         // Exclude old invoice numbers that start with "INV"
         // Find the latest invoice number that does NOT start with INV
@@ -165,5 +171,14 @@ class Invoice extends Model
         return $this->challans->flatMap(function ($challan) {
             return $challan->items;
         });
+    }
+    public static function getFinancialYear($date = null)
+    {
+        $date = $date ? \Carbon\Carbon::parse($date) : \Carbon\Carbon::now();
+        $year = $date->year;
+        if ($date->month < 4) {
+            return ($year - 1) . '-' . $year;
+        }
+        return $year . '-' . ($year + 1);
     }
 }

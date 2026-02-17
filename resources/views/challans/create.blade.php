@@ -187,21 +187,24 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Challan number duplicate validation
     const challanNumberInput = document.getElementById('challan_number');
+    const challanDateInput = document.getElementById('challan_date');
     const challanNumberError = document.getElementById('challan_number_error');
     let duplicateCheckTimeout;
     
-    challanNumberInput.addEventListener('input', function() {
-        const challanNumber = this.value.trim();
+    function triggerDuplicateCheck() {
+        const challanNumber = challanNumberInput.value.trim();
+        const partyId = partySelect.value;
+        const challanDate = challanDateInput.value;
         
         // Clear previous timeout
         clearTimeout(duplicateCheckTimeout);
         
-        // Hide error message
+        // Hide error message initially
         challanNumberError.style.display = 'none';
-        this.classList.remove('is-invalid');
+        challanNumberInput.classList.remove('is-invalid');
         
-        // Only check if value is not empty
-        if (challanNumber.length > 0) {
+        // Only check if all required fields are present
+        if (challanNumber.length > 0 && partyId && challanDate) {
             // Debounce the AJAX call
             duplicateCheckTimeout = setTimeout(function() {
                 fetch('{{ route("api.challans.check-duplicate") }}', {
@@ -211,7 +214,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                     },
                     body: JSON.stringify({
-                        challan_number: challanNumber
+                        challan_number: challanNumber,
+                        party_id: partyId,
+                        challan_date: challanDate
                     })
                 })
                 .then(response => response.json())
@@ -225,9 +230,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 .catch(error => {
                     console.error('Error checking duplicate:', error);
                 });
-            }, 500); // Wait 500ms after user stops typing
+            }, 500); 
         }
-    });
+    }
+
+    // Expose globally so party search script can trigger it
+    window.triggerChallanDuplicateCheck = triggerDuplicateCheck;
+
+    challanNumberInput.addEventListener('input', triggerDuplicateCheck);
+    challanDateInput.addEventListener('change', triggerDuplicateCheck);
+    
+    // Hook into party selection (since it's a select or custom input, we watch the select)
+    // The partySelect is already defined as document.getElementById('party_id')
+    partySelect.addEventListener('change', triggerDuplicateCheck);
     
     // Add new item row
     addItemBtn.addEventListener('click', function() {

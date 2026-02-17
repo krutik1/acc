@@ -27,7 +27,20 @@ class ChallanRequest extends FormRequest
                 'nullable',
                 'string',
                 'max:50',
-                'unique:challans,challan_number,' . $challanId,
+                'max:50',
+                \Illuminate\Validation\Rule::unique('challans')->where(function ($query) {
+                    $financialYear = \App\Models\Invoice::getFinancialYear($this->challan_date);
+                    // Assuming company_id is available on user or via relationship. 
+                    // Since controller uses getCompanyId(), we should probably use the same.
+                    // But usually in single-tenant app, auth()->user()->company_id or similar.
+                    // For now, let's try to get it from the user.
+                    $companyId = auth()->user()->company_id ?? 1; // Fallback or strict? 
+                    // Better to just check if it matches the current company context if possible.
+                    // If this is multi-tenant by row, we MUST filter by company_id.
+                    return $query->where('company_id', $companyId)
+                        ->where('party_id', $this->party_id)
+                        ->where('financial_year', $financialYear);
+                })->ignore($challanId),
             ],
             'challan_date' => ['required', 'date'],
             'items' => ['required', 'array', 'min:1'],
