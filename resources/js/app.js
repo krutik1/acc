@@ -1,4 +1,5 @@
 import './bootstrap';
+import '@fontsource/inter';
 
 import Alpine from 'alpinejs';
 

@@ -90,7 +90,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         debounceTimer = setTimeout(() => {
-            fetch(`/api/suggestions?type=${type}&q=${encodeURIComponent(query)}`)
+            fetch(`{{ route('api.suggestions') }}?type=${type}&q=${encodeURIComponent(query)}`)
                 .then(response => response.json())
                 .then(data => {
                     showSuggestions(data, input);

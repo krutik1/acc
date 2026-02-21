@@ -81,63 +81,65 @@
             </button>
         </div>
         <div class="card-body p-0">
-            <table class="table mb-0" id="itemsTable">
-                <thead>
-                    <tr>
-                        <th width="40%">Description</th>
-                        <th width="12%">Quantity</th>
-                        <th width="12%">Unit</th>
-                        <th width="15%">Rate</th>
-                        <th width="15%">Amount</th>
-                        <th width="6%"></th>
-                    </tr>
-                </thead>
-                <tbody id="itemsBody">
-                    @foreach($challan->items as $index => $item)
-                    <tr class="item-row">
-                        <td>
-                            <input type="text" class="form-control form-control-sm enable-autocomplete item-description" 
-                                   data-type="challan_item_description"
-                                   name="items[{{ $index }}][description]" 
-                                   value="{{ old("items.$index.description", $item->description) }}" required autocomplete="off">
-                        </td>
-                        <td>
-                            <input type="number" step="0.001" min="0.001" class="form-control form-control-sm item-qty" 
-                                   name="items[{{ $index }}][quantity]" 
-                                   value="{{ old("items.$index.quantity", $item->quantity) }}" required>
-                        </td>
-                        <td>
-                            <select class="form-select form-select-sm item-unit" name="items[{{ $index }}][unit]">
-                                @foreach($units as $key => $label)
-                                    <option value="{{ $key }}" {{ $item->unit == $key ? 'selected' : '' }}>{{ $key }}</option>
-                                @endforeach
-                            </select>
-                        </td>
-                        <td>
-                            <input type="number" step="0.01" min="0" class="form-control form-control-sm item-rate" 
-                                   name="items[{{ $index }}][rate]" 
-                                   value="{{ old("items.$index.rate", $item->rate) }}" required>
-                        </td>
-                        <td>
-                            <input type="text" class="form-control form-control-sm item-amount" readonly disabled 
-                                   value="₹{{ number_format($item->amount, 2) }}">
-                        </td>
-                        <td>
-                            <button type="button" class="btn btn-sm btn-outline-danger remove-item" {{ $challan->items->count() == 1 ? 'disabled' : '' }}>
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-                <tfoot>
-                    <tr class="table-light">
-                        <td colspan="4" class="text-end"><strong>Subtotal:</strong></td>
-                        <td><strong id="subtotal">₹{{ number_format($challan->subtotal, 2) }}</strong></td>
-                        <td></td>
-                    </tr>
-                </tfoot>
-            </table>
+            <div class="table-responsive">
+                <table class="table mb-0" id="itemsTable">
+                    <thead>
+                        <tr>
+                            <th width="40%">Description</th>
+                            <th width="12%">Quantity</th>
+                            <th width="12%">Unit</th>
+                            <th width="15%">Rate</th>
+                            <th width="15%">Amount</th>
+                            <th width="6%"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="itemsBody">
+                        @foreach($challan->items as $index => $item)
+                        <tr class="item-row">
+                            <td>
+                                <input type="text" class="form-control form-control-sm enable-autocomplete item-description" 
+                                       data-type="challan_item_description"
+                                       name="items[{{ $index }}][description]" 
+                                       value="{{ old("items.$index.description", $item->description) }}" required autocomplete="off">
+                            </td>
+                            <td>
+                                <input type="number" step="0.001" min="0.001" class="form-control form-control-sm item-qty" 
+                                       name="items[{{ $index }}][quantity]" 
+                                       value="{{ old("items.$index.quantity", $item->quantity) }}" required>
+                            </td>
+                            <td>
+                                <select class="form-select form-select-sm item-unit" name="items[{{ $index }}][unit]">
+                                    @foreach($units as $key => $label)
+                                        <option value="{{ $key }}" {{ $item->unit == $key ? 'selected' : '' }}>{{ $key }}</option>
+                                    @endforeach
+                                </select>
+                            </td>
+                            <td>
+                                <input type="number" step="0.01" min="0" class="form-control form-control-sm item-rate" 
+                                       name="items[{{ $index }}][rate]" 
+                                       value="{{ old("items.$index.rate", $item->rate) }}" required>
+                            </td>
+                            <td>
+                                <input type="text" class="form-control form-control-sm item-amount" readonly disabled 
+                                       value="₹{{ number_format($item->amount, 2) }}">
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-sm btn-outline-danger remove-item" {{ $challan->items->count() == 1 ? 'disabled' : '' }}>
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                    <tfoot>
+                        <tr class="table-light">
+                            <td colspan="4" class="text-end"><strong>Subtotal:</strong></td>
+                            <td><strong id="subtotal">₹{{ number_format($challan->subtotal, 2) }}</strong></td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
         </div>
     </div>
     
@@ -167,7 +169,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const detailsDiv = document.getElementById('partyDetails');
         
         if (partyId) {
-             fetch(`/api/parties/${partyId}/details`)
+             const url = "{{ route('api.parties.details', ':id') }}".replace(':id', partyId);
+             fetch(url)
                 .then(response => response.json())
                 .then(data => {
                     document.getElementById('partyAddress').textContent = data.address || '-';
@@ -303,7 +306,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const name = e.target.value.trim();
             
             if (name.length > 0) {
-                fetch(`/api/items/search?q=${encodeURIComponent(name)}`)
+                fetch(`{{ route('api.items.search') }}?q=${encodeURIComponent(name)}`)
                     .then(response => response.json())
                     .then(data => {
                         // Find exact match

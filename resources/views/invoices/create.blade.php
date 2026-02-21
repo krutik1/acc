@@ -84,18 +84,20 @@
                     </div>
                     
                     <div id="challansContainer" style="display: none;">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th width="40"><input type="checkbox" id="selectAll" class="form-check-input"></th>
-                                    <th>Challan No.</th>
-                                    <th>Date</th>
-                                    <th>Items</th>
-                                    <th class="text-end">Amount</th>
-                                </tr>
-                            </thead>
-                            <tbody id="challansBody"></tbody>
-                        </table>
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th width="40"><input type="checkbox" id="selectAll" class="form-check-input"></th>
+                                        <th>Challan No.</th>
+                                        <th>Date</th>
+                                        <th>Items</th>
+                                        <th class="text-end">Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="challansBody"></tbody>
+                            </table>
+                        </div>
                     </div>
                     
                     @error('challan_ids')
@@ -224,7 +226,8 @@ document.addEventListener('DOMContentLoaded', function() {
         challansLoading.style.display = 'block';
         
         // Fetch challans for party
-        fetch(`/api/parties/${partyId}/challans`)
+        const url = "{{ route('api.parties.challans', ':id') }}".replace(':id', partyId);
+        fetch(url)
             .then(response => response.json())
             .then(data => {
                 challansLoading.style.display = 'none';

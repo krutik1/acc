@@ -1,5 +1,8 @@
 # How to Push Updates to Your Users
 
+.\build_update.ps1
+.\build_update.bat
+
 This guide explains how the In-App Update System works and how you (the developer) can release new versions to your users.
 
 ## 1. Prerequisites (Server Setup)
@@ -36,11 +39,14 @@ You will host a JSON file that looks like this:
 When you have made changes to your code and want to release them:
 
 1.  **Increment Version**: Update `APP_VERSION` in your local `.env` and `config/app.php` (if applicable) to the new number (e.g., `1.1.0`).
-2.  **Package Files**: Create a `.zip` file containing **only the changed files** (or the entire project, excluding `storage`, `.env`, and `vendor` folder).
-    - _Recommendation_: It's safest to zip the entire `app`, `config`, `database`, `public`, `resources`, `routes` folders.
-    - **Do NOT** include `.env` (it contains user specific secrets).
-    - **Do NOT** include `storage` (it contains user logs/uploads).
-3.  **Upload**: Upload this zip file to your server.
+2.  **Package Files**:
+    - **Run the Build Script**: Double-click `build_update.bat` or run `.\build_update.bat` in your terminal.
+    - This script automatically:
+        - Builds frontend assets (`npm run build`).
+        - Optimizes PHP dependencies (`composer install --no-dev`).
+        - Creates a ready-to-upload zip file (e.g., `update_package_2026-02-18_19-43.zip`) excluding `node_modules` and `storage`.
+        - Restores your dev environment.
+3.  **Upload**: Upload this **generated zip file** to your server as `update_v1.1.0.zip` (rename it to match your version).
 
 ## 4. Releasing the Update
 

@@ -14,7 +14,7 @@
 
     <div class="card mb-4">
         <div class="card-header">
-            <i class="fas fa-envelope me-1"></i>
+            <i class="bi bi-envelope me-1"></i>
             Compose Email
         </div>
         <div class="card-body">
@@ -60,7 +60,7 @@
                 <div class="mb-3">
                     <label class="form-label">Attachment</label>
                     <div class="input-group">
-                        <span class="input-group-text"><i class="fas fa-file-pdf"></i></span>
+                        <span class="input-group-text"><i class="bi bi-file-earmark-pdf"></i></span>
                         <input type="text" class="form-control" value="Invoice-{{ $invoice->invoice_number }}.pdf" disabled readonly>
                         <span class="input-group-text text-muted">Auto-attached</span>
                     </div>
@@ -68,7 +68,7 @@
 
                 <div class="d-flex justify-content-between">
                     <a href="{{ route('invoices.index') }}" class="btn btn-secondary">Cancel</a>
-                    <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane me-1"></i> Send Email</button>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-send-fill me-1"></i> Send Email</button>
                 </div>
             </form>
         </div>

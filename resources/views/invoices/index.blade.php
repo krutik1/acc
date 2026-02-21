@@ -51,66 +51,68 @@
 <!-- Invoices List -->
 <div class="card">
     <div class="card-body p-0">
-        <table class="table table-hover mb-0">
-            <thead>
-                <tr>
-                    <th>Invoice No.</th>
-                    <th>Date</th>
-                    <th>Party</th>
-                    <th class="text-end">Subtotal</th>
-                    <th class="text-end">GST</th>
-                    <th class="text-end">Final Amount</th>
-                    <th class="text-end">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($invoices as $invoice)
-                <tr>
-                    <td><a href="{{ route('invoices.show', $invoice) }}"><strong>{{ $invoice->invoice_number }}</strong></a></td>
-                    <td>{{ $invoice->invoice_date->format('d/m/Y') }}</td>
-                    <td>{{ $invoice->party->name }}</td>
-                    <td class="text-end">₹{{ formatIndianCurrency($invoice->subtotal) }}</td>
-                    <td class="text-end">₹{{ formatIndianCurrency($invoice->gst_amount) }}</td>
-                    <td class="text-end"><strong class="text-primary">₹{{ formatIndianCurrency($invoice->final_amount) }}</strong></td>
-                    <td>
-                        <a href="{{ route('invoices.show', $invoice) }}" class="action-btn bg-warning me-1" title="View">
-                            <i class="bi bi-eye-fill text-white" style="font-size: 0.8rem;"></i>
-                        </a>
-                        <a href="{{ route('invoices.edit', $invoice) }}" class="action-btn bg-info me-1" title="Edit">
-                            <i class="bi bi-pencil-fill text-white" style="font-size: 0.8rem;"></i>
-                        </a>
-                        <a href="{{ route('invoices.share.email', $invoice) }}" class="action-btn bg-secondary me-1" title="Send via Email">
-                            <i class="bi bi-envelope-fill text-white" style="font-size: 0.8rem;"></i>
-                        </a>
-                        <a href="{{ route('invoices.share.whatsapp', $invoice) }}" class="action-btn bg-success me-1" title="Send via WhatsApp" target="_blank">
-                            <i class="bi bi-whatsapp text-white" style="font-size: 0.8rem;"></i>
-                        </a>
-                        <a href="{{ route('invoices.pdf', $invoice) }}" class="action-btn bg-danger me-1" title="Download PDF">
-                            <i class="bi bi-file-pdf-fill text-white" style="font-size: 0.8rem;"></i>
-                        </a>
-                        <a href="{{ route('invoices.print', $invoice) }}" class="action-btn bg-primary me-1" title="Print" target="_blank">
-                            <i class="bi bi-printer-fill text-white" style="font-size: 0.8rem;"></i>
-                        </a>
-                        <form action="{{ route('invoices.destroy', $invoice) }}" method="POST" class="d-inline" 
-                              onsubmit="return confirm('Are you sure you want to delete this invoice?');">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="action-btn bg-danger" title="Delete">
-                                <i class="bi bi-trash-fill text-white" style="font-size: 0.8rem;"></i>
-                            </button>
-                        </form>
-                    </td>
-                </tr>
-                @empty
-                <tr>
-                    <td colspan="7" class="text-center py-4 text-muted">
-                        <i class="bi bi-receipt display-4 d-block mb-2"></i>
-                        No invoices found. <a href="{{ route('invoices.create') }}">Create your first invoice</a>
-                    </td>
-                </tr>
-                @endforelse
-            </tbody>
-        </table>
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Invoice No.</th>
+                        <th>Date</th>
+                        <th>Party</th>
+                        <th class="text-end">Subtotal</th>
+                        <th class="text-end">GST</th>
+                        <th class="text-end">Final Amount</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($invoices as $invoice)
+                    <tr>
+                        <td><a href="{{ route('invoices.show', $invoice) }}"><strong>{{ $invoice->invoice_number }}</strong></a></td>
+                        <td>{{ $invoice->invoice_date->format('d/m/Y') }}</td>
+                        <td>{{ $invoice->party->name }}</td>
+                        <td class="text-end">₹{{ formatIndianCurrency($invoice->subtotal) }}</td>
+                        <td class="text-end">₹{{ formatIndianCurrency($invoice->gst_amount) }}</td>
+                        <td class="text-end"><strong class="text-primary">₹{{ formatIndianCurrency($invoice->final_amount) }}</strong></td>
+                        <td>
+                            <a href="{{ route('invoices.show', $invoice) }}" class="action-btn bg-warning me-1" title="View">
+                                <i class="bi bi-eye-fill text-white" style="font-size: 0.8rem;"></i>
+                            </a>
+                            <a href="{{ route('invoices.edit', $invoice) }}" class="action-btn bg-info me-1" title="Edit">
+                                <i class="bi bi-pencil-fill text-white" style="font-size: 0.8rem;"></i>
+                            </a>
+                            <a href="{{ route('invoices.share.email', $invoice) }}" class="action-btn bg-secondary me-1" title="Send via Email">
+                                <i class="bi bi-envelope-fill text-white" style="font-size: 0.8rem;"></i>
+                            </a>
+                            <a href="{{ route('invoices.share.whatsapp', $invoice) }}" class="action-btn bg-success me-1" title="Send via WhatsApp" target="_blank">
+                                <i class="bi bi-whatsapp text-white" style="font-size: 0.8rem;"></i>
+                            </a>
+                            <a href="{{ route('invoices.pdf', $invoice) }}" class="action-btn bg-danger me-1" title="Download PDF">
+                                <i class="bi bi-file-pdf-fill text-white" style="font-size: 0.8rem;"></i>
+                            </a>
+                            <a href="{{ route('invoices.print', $invoice) }}" class="action-btn bg-primary me-1" title="Print" target="_blank">
+                                <i class="bi bi-printer-fill text-white" style="font-size: 0.8rem;"></i>
+                            </a>
+                            <form action="{{ route('invoices.destroy', $invoice) }}" method="POST" class="d-inline" 
+                                  onsubmit="return confirm('Are you sure you want to delete this invoice?');">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="action-btn bg-danger" title="Delete">
+                                    <i class="bi bi-trash-fill text-white" style="font-size: 0.8rem;"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-muted">
+                            <i class="bi bi-receipt display-4 d-block mb-2"></i>
+                            No invoices found. <a href="{{ route('invoices.create') }}">Create your first invoice</a>
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 

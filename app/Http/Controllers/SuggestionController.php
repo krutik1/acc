@@ -43,8 +43,9 @@ class SuggestionController extends Controller
             ->limit(10);
 
         // Add company scope
-        if (Schema::hasColumn($table, 'company_id')) {
-            $results->where($table . '.company_id', $this->getCompanyId());
+        // Add company scope
+        if (isset($config['company_col']) && $config['company_col']) {
+            $results->where($table . '.' . $config['company_col'], $this->getCompanyId());
         } elseif ($table === 'challan_items') {
             $results->join('challans', 'challan_items.challan_id', '=', 'challans.id')
                 ->where('challans.company_id', $this->getCompanyId());

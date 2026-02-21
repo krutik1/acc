@@ -22,8 +22,7 @@
     <link href="{{ asset('assets/vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link href="{{ asset('assets/vendor/bootstrap-icons/css/bootstrap-icons.css') }}" rel="stylesheet">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
     
     <style>
         :root {

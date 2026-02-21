@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         debounceTimer = setTimeout(() => {
-            fetch(`/api/parties/search?q=${encodeURIComponent(query)}`)
+            fetch(`{{ route('api.parties.search') }}?q=${encodeURIComponent(query)}`)
                 .then(response => response.json())
                 .then(data => {
                     suggestionsBox.innerHTML = '';
@@ -75,7 +75,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // For now, let's just properly initialize empty.
     if(hiddenInput.value){
         // Ideally we fetch the name for the ID here to pre-fill the search box
-         fetch(`/api/parties/${hiddenInput.value}/details`)
+         const detailsUrl = "{{ route('api.parties.details', ':id') }}".replace(':id', hiddenInput.value);
+         fetch(detailsUrl)
             .then(response => response.json())
             .then(data => {
                 searchInput.value = data.name;

@@ -86,18 +86,20 @@
                     </div>
                     
                     <div id="challansContainer" style="display: none;">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th width="40"><input type="checkbox" id="selectAll" class="form-check-input"></th>
-                                    <th>Challan No.</th>
-                                    <th>Date</th>
-                                    <th>Items</th>
-                                    <th class="text-end">Amount</th>
-                                </tr>
-                            </thead>
-                            <tbody id="challansBody"></tbody>
-                        </table>
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th width="40"><input type="checkbox" id="selectAll" class="form-check-input"></th>
+                                        <th>Challan No.</th>
+                                        <th>Date</th>
+                                        <th>Items</th>
+                                        <th class="text-end">Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="challansBody"></tbody>
+                            </table>
+                        </div>
                     </div>
                     
                     @error('challan_ids')
@@ -226,7 +228,13 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Fetch challans for party
         const currentInvoiceId = '{{ $invoice->id }}';
-        fetch(`/api/parties/${partyId}/challans?current_invoice_id=${currentInvoiceId}`)
+        // Note: Using replace on a route parameter works because Laravel generates a URL with the placeholder if config is set, 
+        // OR we can rely on JS string replacement for the ID part if we use a dummy ID in route() or just build base URL properly.
+        // Better approach: route('api.parties.challans', ['party' => '__PARTY_ID__'])
+        const baseUrl = "{{ route('api.parties.challans', ['party' => 'PARTY_ID']) }}";
+        const url = baseUrl.replace('PARTY_ID', partyId) + `?current_invoice_id=${currentInvoiceId}`;
+        
+        fetch(url)
             .then(response => response.json())
             .then(data => {
                 challansLoading.style.display = 'none';
