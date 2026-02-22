@@ -17,7 +17,7 @@ class PaymentController extends Controller
     public function index(Request $request)
     {
         $companyId = $this->getCompanyId();
-        $query = Payment::with('party')->where('company_id', $companyId);
+        $query = Payment::with(['party', 'invoices'])->where('company_id', $companyId);
 
         // Filter by party
         if ($request->filled('party_id')) {
@@ -39,9 +39,9 @@ class PaymentController extends Controller
 
         // Search by payment number or reference
         if ($request->filled('search')) {
-            $query->where(function($q) use ($request) {
+            $query->where(function ($q) use ($request) {
                 $q->where('payment_number', 'like', "%{$request->search}%")
-                  ->orWhere('reference_number', 'like', "%{$request->search}%");
+                    ->orWhere('reference_number', 'like', "%{$request->search}%");
             });
         }
 
@@ -53,7 +53,7 @@ class PaymentController extends Controller
             $query->where('amount', '<=', $request->max_amount);
         }
 
-        $payments = $query->orderBy('payment_date', 'desc')->paginate(10);
+        $payments = $query->orderBy('payment_date', 'desc')->orderBy('id', 'desc')->paginate(10);
         $parties = Party::where('company_id', $companyId)->orderBy('name')->get();
 
         return view('payments.index', compact('payments', 'parties'));
@@ -84,25 +84,48 @@ class PaymentController extends Controller
             'mode' => 'required|in:cash,cheque,bank_transfer,upi,other',
             'reference_number' => 'nullable|string|max:255',
             'notes' => 'nullable|string',
+            'invoices' => 'nullable|array',
+            'invoices.*.id' => 'nullable|exists:invoices,id',
+            'invoices.*.amount' => 'nullable|numeric|min:0',
         ]);
+
 
         $companyId = $this->getCompanyId();
 
-        Payment::create([
-            'company_id' => $companyId,
-            'party_id' => $request->party_id,
-            'payment_number' => Payment::generatePaymentNumber($companyId),
-            'payment_date' => $request->payment_date,
-            'amount' => $request->amount,
-            'type' => $request->type,
-            'mode' => $request->mode,
-            'reference_number' => $request->reference_number,
-            'notes' => $request->notes,
-        ]);
+        DB::beginTransaction();
+        try {
+            $payment = Payment::create([
+                'company_id' => $companyId,
+                'party_id' => $request->party_id,
+                'payment_number' => Payment::generatePaymentNumber($companyId),
+                'payment_date' => $request->payment_date,
+                'amount' => $request->amount,
+                'type' => $request->type,
+                'mode' => $request->mode,
+                'reference_number' => $request->reference_number,
+                'notes' => $request->notes,
+            ]);
 
-        return redirect()->route('payments.index')
-            ->with('success', 'Payment recorded successfully.');
+            if ($request->filled('invoices')) {
+                foreach ($request->invoices as $invoiceData) {
+                    if (isset($invoiceData['id']) && isset($invoiceData['amount']) && $invoiceData['amount'] > 0) {
+                        $payment->invoices()->attach($invoiceData['id'], [
+                            'amount' => $invoiceData['amount']
+                        ]);
+                    }
+                }
+            }
+
+            DB::commit();
+            return redirect()->route('payments.index')
+                ->with('success', 'Payment recorded successfully.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withInput()->with('error', 'Failed to record payment: ' . $e->getMessage());
+        }
     }
+
 
     /**
      * Display the specified payment.
@@ -124,7 +147,8 @@ class PaymentController extends Controller
         if ($payment->company_id != $this->getCompanyId()) {
             abort(404);
         }
-        
+
+        $payment->load('invoices');
         $companyId = $this->getCompanyId();
         $parties = Party::where('company_id', $companyId)->orderBy('name')->get();
 
@@ -148,21 +172,43 @@ class PaymentController extends Controller
             'mode' => 'required|in:cash,cheque,bank_transfer,upi,other',
             'reference_number' => 'nullable|string|max:255',
             'notes' => 'nullable|string',
+            'invoices' => 'nullable|array',
+            'invoices.*.id' => 'nullable|exists:invoices,id', // Allow null for unchecked rows
+            'invoices.*.amount' => 'nullable|numeric|min:0', // Allow null for unchecked rows
         ]);
 
-        $payment->update([
-            'party_id' => $request->party_id,
-            'payment_date' => $request->payment_date,
-            'amount' => $request->amount,
-            'type' => $request->type,
-            'mode' => $request->mode,
-            'reference_number' => $request->reference_number,
-            'notes' => $request->notes,
-        ]);
+        DB::beginTransaction();
+        try {
+            $payment->update([
+                'party_id' => $request->party_id,
+                'payment_date' => $request->payment_date,
+                'amount' => $request->amount,
+                'type' => $request->type,
+                'mode' => $request->mode,
+                'reference_number' => $request->reference_number,
+                'notes' => $request->notes,
+            ]);
 
-        return redirect()->route('payments.index')
-            ->with('success', 'Payment updated successfully.');
+            $syncData = [];
+            if ($request->filled('invoices')) {
+                foreach ($request->invoices as $invoiceData) {
+                    if (isset($invoiceData['id']) && isset($invoiceData['amount']) && $invoiceData['amount'] > 0) {
+                        $syncData[$invoiceData['id']] = ['amount' => $invoiceData['amount']];
+                    }
+                }
+            }
+            $payment->invoices()->sync($syncData);
+
+            DB::commit();
+            return redirect()->route('payments.index')
+                ->with('success', 'Payment updated successfully.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withInput()->with('error', 'Failed to update payment: ' . $e->getMessage());
+        }
     }
+
 
     /**
      * Remove the specified payment from storage.
@@ -170,14 +216,27 @@ class PaymentController extends Controller
     public function destroy(Payment $payment)
     {
         if ($payment->company_id != $this->getCompanyId()) {
-            abort(404);
+            abort(403);
         }
 
-        $payment->delete();
+        DB::beginTransaction();
+        try {
+            // Detach all invoices first
+            $payment->invoices()->detach();
 
-        return redirect()->route('payments.index')
-            ->with('success', 'Payment deleted successfully.');
+            // Delete the payment record
+            $payment->delete();
+
+            DB::commit();
+            return redirect()->route('payments.index')
+                ->with('success', 'Payment deleted successfully.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Failed to delete payment: ' . $e->getMessage());
+        }
     }
+
 
     /**
      * Print payment receipt.
@@ -189,9 +248,71 @@ class PaymentController extends Controller
         }
         $payment->load('party');
         $company = $payment->company;
-        
+
         return view('payments.print', compact('payment', 'company'));
     }
+
+    public function getPendingInvoices(Request $request, Party $party)
+    {
+        if ($party->company_id != $this->getCompanyId()) {
+            return response()->json([], 403);
+        }
+
+        $paymentId = $request->payment_id;
+
+        // Fetch all invoices for the party, limited to last 2 years to hide "old" records
+        $invoices = $party->invoices()
+            ->where('invoice_date', '>=', now()->subYears(2))
+            ->orderBy('invoice_date', 'desc')
+            ->orderBy('id', 'desc')
+            ->get()
+            ->filter(function ($invoice) use ($paymentId) {
+                // If it's already linked to THIS payment, we MUST show it
+                if ($paymentId) {
+                    $isLinkedToThis = DB::table('payment_invoices')
+                        ->where('payment_id', $paymentId)
+                        ->where('invoice_id', $invoice->id)
+                        ->exists();
+                    if ($isLinkedToThis)
+                        return true;
+                }
+
+                // NEW "One-Link" RULE: Hide if recorded in ANY payment
+                $isLinkedToAny = DB::table('payment_invoices')
+                    ->where('invoice_id', $invoice->id)
+                    ->exists();
+
+                if ($isLinkedToAny)
+                    return false;
+
+                // Otherwise, only show if it has a real balance > 0.009 (to handle float precision)
+                $pending = (float) $invoice->pending_amount;
+                return $pending > 0.009;
+            })
+            ->values();
+
+
+
+        // Include the pivot amount if payment_id is provided
+        if ($paymentId) {
+            $payment = Payment::with('invoices')->find($paymentId);
+            $invoices = $invoices->map(function ($invoice) use ($payment) {
+                $linked = $payment->invoices->where('id', $invoice->id)->first();
+                $invoice->setAttribute('allocated_amount', $linked ? $linked->pivot->amount : 0);
+                return $invoice;
+            });
+        } else {
+            // For new payments, just set allocated to 0
+            $invoices = $invoices->map(function ($invoice) {
+                $invoice->setAttribute('allocated_amount', 0);
+                return $invoice;
+            });
+        }
+
+        return response()->json($invoices);
+    }
+
+
 
     protected function getCompanyId(): ?int
     {

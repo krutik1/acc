@@ -148,6 +148,9 @@ Route::middleware(['auth', 'company', 'role:admin'])->group(function () {
     Route::resource('payments', PaymentController::class);
     Route::get('/payments/{payment}/print', [PaymentController::class, 'print'])
         ->name('payments.print');
+    Route::get('/api/parties/{party}/pending-invoices', [PaymentController::class, 'getPendingInvoices'])
+        ->name('api.parties.pending-invoices');
+
 
     // Report Routes
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');

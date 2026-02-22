@@ -97,7 +97,13 @@
                         @endif
                     </td>
                     <td><span class="text-muted small text-uppercase">{{ str_replace('_', ' ', $payment->mode) }}</span></td>
-                    <td class="text-end fw-bold">₹{{ formatIndianCurrency($payment->amount) }}</td>
+                    <td class="text-end fw-bold">
+                        <div>₹{{ formatIndianCurrency($payment->amount) }}</div>
+                        @if($payment->is_partial)
+                            <span class="badge bg-warning text-dark px-1 py-0" style="font-size: 0.65rem;">PARTIAL</span>
+                        @endif
+                    </td>
+
                     <td class="text-end">
                         <a href="{{ route('payments.show', $payment) }}" class="action-btn bg-warning me-1" title="View">
                             <i class="bi bi-eye-fill text-white" style="font-size: 0.8rem;"></i>
@@ -108,7 +114,15 @@
                         <a href="{{ route('payments.print', $payment) }}" class="action-btn bg-primary me-1" title="Print" target="_blank">
                             <i class="bi bi-printer-fill text-white" style="font-size: 0.8rem;"></i>
                         </a>
+                        <form action="{{ route('payments.destroy', $payment) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this payment record?');">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="action-btn bg-danger border-0" title="Delete">
+                                <i class="bi bi-trash-fill text-white" style="font-size: 0.8rem;"></i>
+                            </button>
+                        </form>
                     </td>
+
                 </tr>
                 @empty
                 <tr>

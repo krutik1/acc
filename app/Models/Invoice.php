@@ -81,6 +81,37 @@ class Invoice extends Model
     }
 
     /**
+     * Get the payments for the invoice.
+     */
+    public function payments(): BelongsToMany
+    {
+        return $this->belongsToMany(Payment::class, 'payment_invoices')
+            ->withPivot('amount')
+            ->withTimestamps();
+    }
+
+    /**
+     * Get the total paid amount for this invoice.
+     */
+    public function getPaidAmountAttribute()
+    {
+        return round((float) $this->payments()->sum('payment_invoices.amount'), 2);
+    }
+
+
+
+    /**
+     * Get the pending amount for this invoice.
+     */
+    public function getPendingAmountAttribute()
+    {
+        return round((float) $this->final_amount - $this->paid_amount, 2);
+    }
+
+
+
+
+    /**
      * Calculate all amounts based on subtotal.
      * 
      * @param float $subtotal The base subtotal amount

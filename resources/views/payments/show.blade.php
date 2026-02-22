@@ -60,6 +60,43 @@
                     <p>{{ $payment->notes }}</p>
                 </div>
                 @endif
+
+                @if($payment->invoices->count() > 0)
+                <div class="mb-4">
+                    <h6 class="text-muted mb-3">Linked Invoices</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Invoice #</th>
+                                    <th>Date</th>
+                                    <th class="text-end">Invoice Amount</th>
+                                    <th class="text-end">Paid in this Payment</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($payment->invoices as $invoice)
+                                <tr>
+                                    <td>
+                                        <a href="{{ route('invoices.show', $invoice) }}">{{ $invoice->invoice_number }}</a>
+                                    </td>
+                                    <td>{{ $invoice->invoice_date->format('d/m/Y') }}</td>
+                                    <td class="text-end">₹ {{ formatIndianCurrency($invoice->final_amount) }}</td>
+                                    <td class="text-end fw-bold text-success">₹ {{ formatIndianCurrency($invoice->pivot->amount) }}</td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                            <tfoot>
+                                <tr class="table-light fw-bold">
+                                    <td colspan="3" class="text-end">Total Allocated:</td>
+                                    <td class="text-end">₹ {{ formatIndianCurrency($payment->invoices->sum('pivot.amount')) }}</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+                @endif
+
             </div>
             <div class="card-footer text-end">
                 <form action="{{ route('payments.destroy', $payment) }}" method="POST" class="d-inline" 
